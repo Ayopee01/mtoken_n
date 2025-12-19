@@ -1,0 +1,14 @@
+# Dependencies (ไฟล์ไลบรารีขนาดใหญ่ ไม่ควรอัพโหลด)
+node_modules/
+
+# Environment Variables (ไฟล์เก็บ Key ความลับ ห้ามอัพเด็ดขาด)
+.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files (ไฟล์ขยะของระบบปฏิบัติการ)
+.DS_Store
+Thumbs.db

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Digital ID | Management Portal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --success-color: #059669;
+            --bg-color: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border: none;
+        }
+
+        .logo-area i { font-size: 3rem; margin-bottom: 10px; color: rgba(255,255,255,0.9); }
+        .form-control { border-radius: 12px; padding: 12px 15px; border: 1px solid #e2e8f0; background-color: #f8fafc; }
+        .btn-custom { background: var(--primary-color); color: white; border-radius: 12px; padding: 14px; font-weight: 600; transition: all 0.3s; }
+        .btn-custom:hover { background: var(--accent-color); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); }
+
+        /* Stepper */
+        .step-container { display: flex; justify-content: space-between; margin: 20px 0; position: relative; }
+        .step-line { position: absolute; top: 15px; left: 0; width: 100%; height: 2px; background: #e2e8f0; z-index: 0; }
+        .step-item { position: relative; z-index: 1; text-align: center; width: 33%; }
+        .step-circle { width: 32px; height: 32px; background: #fff; border: 2px solid #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; transition: all 0.5s; color: #cbd5e1; }
+        .step-label { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        
+        .step-item.active .step-circle { border-color: var(--accent-color); color: var(--accent-color); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .step-item.success .step-circle { background: var(--success-color); border-color: var(--success-color); color: white; }
+        .step-item.error .step-circle { background: #ef4444; border-color: #ef4444; color: white; }
+
+        /* Dashboard */
+        .user-profile { text-align: center; padding: 20px; background: #f1f5f9; border-radius: 16px; margin-bottom: 20px; }
+        .avatar-circle { width: 60px; height: 60px; background: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 10px; }
+
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="main-card fade-in">
+    
+    <div class="card-header-custom">
+        <div class="logo-area"><i class="fa-solid fa-shield-halved"></i></div>
+        <h4 class="mb-0 fw-bold">ระบบยืนยันตัวตนดิจิทัล</h4>
+        <small class="opacity-75">Digital Government Authentication</small>
+    </div>
+
+    <div class="card-body p-4">
+        
+        <div id="loginView">
+            <div class="mb-4 text-center text-muted"><small>กรุณายืนยันตัวตนผ่านแอปพลิเคชัน "ทางรัฐ"</small></div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-uppercase text-secondary">App ID</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-cube text-muted"></i></span>
+                    <input type="text" id="appId" class="form-control border-start-0 ps-0" placeholder="ระบุ App ID">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label small fw-bold text-uppercase text-secondary">mToken Key</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-key text-muted"></i></span>
+                    <textarea id="mToken" class="form-control border-start-0 ps-0" rows="2" placeholder="วางโค้ด mToken ที่นี่..."></textarea>
+                </div>
+            </div>
+            <button onclick="startLogin()" class="btn btn-custom w-100 shadow-sm"><i class="fa-solid fa-fingerprint me-2"></i> ยืนยันตัวตน</button>
+        </div>
+
+        <div id="processingView" class="hidden">
+            <h5 class="text-center fw-bold mb-4">กำลังดำเนินการอัตโนมัติ...</h5>
+            <div class="step-container">
+                <div class="step-line"></div>
+                <div class="step-item" id="step1"><div class="step-circle"><i class="fa-solid fa-link"></i></div><div class="step-label">GDX Token</div></div>
+                <div class="step-item" id="step2"><div class="step-circle"><i class="fa-solid fa-id-card"></i></div><div class="step-label">ดึงข้อมูล</div></div>
+                <div class="step-item" id="step3"><div class="step-circle"><i class="fa-solid fa-database"></i></div><div class="step-label">บันทึกระบบ</div></div>
+            </div>
+            <div class="text-center mt-3"><small id="statusText" class="text-muted">ตรวจสอบพารามิเตอร์...</small></div>
+        </div>
+
+        <div id="dashboardView" class="hidden fade-in">
+            <div class="user-profile">
+                <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+                <h5 class="fw-bold mb-1" id="userNameDisplay">-</h5>
+                <small class="text-muted d-block">Citizen ID: <span id="userIdDisplay">...</span></small>
+                <span class="badge bg-success bg-opacity-10 text-success mt-2 px-3 py-2 rounded-pill"><i class="fa-solid fa-check-circle me-1"></i> Verified User</span>
+            </div>
+            <div class="card border-0 bg-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-bell text-warning me-2"></i>ส่งแจ้งเตือน (Notification)</h6>
+                    <div class="input-group mb-2">
+                        <input type="text" id="notifyMsg" class="form-control" value="ยินดีต้อนรับเข้าสู่ระบบ!">
+                        <button onclick="sendNotify()" class="btn btn-dark"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="btn btn-outline-secondary w-100 mt-4 border-0"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> ออกจากระบบ</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let currentUserId = null;
+    let currentAppId = null;
+
+    // --- Auto-Run Logic ---
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        let foundAppId = null;
+        let foundMToken = null;
+
+        // 1. หาค่าจาก URL
+        if(params.has('appId')) foundAppId = params.get('appId');
+        if(params.has('mToken')) foundMToken = params.get('mToken');
+        
+        // 2. หาค่าจาก SDK (เผื่อ URL ไม่มี)
+        if(!foundAppId && window.czpSdk) {
+            try { foundAppId = window.czpSdk.getAppId(); } catch(e) {}
+        }
+
+        // 3. เติมค่าลง Input (เผื่อต้องแก้)
+        if(foundAppId) document.getElementById('appId').value = foundAppId;
+        if(foundMToken) document.getElementById('mToken').value = foundMToken;
+
+        // 4. 🔥 ถ้ามีครบทั้งคู่ ให้รันทันที (ไม่ต้องรอคนกด)
+        if(foundAppId && foundMToken) {
+            console.log("🚀 Auto-Login Triggered!");
+            startLogin(); 
+        }
+    }
+
+    function updateStep(stepId, status) {
+        const el = document.getElementById(stepId);
+        if(status === 'active') {
+            el.classList.add('active');
+        } else if (status === 'success') {
+            el.classList.remove('active'); el.classList.add('success');
+            el.querySelector('.step-circle').innerHTML = '<i class="fa-solid fa-check"></i>';
+        } else if (status === 'error') {
+            el.classList.remove('active'); el.classList.add('error');
+            el.querySelector('.step-circle').innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        }
+    }
+
+    async function startLogin() {
+        const appId = document.getElementById('appId').value;
+        const mToken = document.getElementById('mToken').value;
+
+        // เปลี่ยนหน้าทันที
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('processingView').classList.remove('hidden');
+
+        try {
+            updateStep('step1', 'active');
+            document.getElementById('statusText').innerText = "กำลังตรวจสอบ Token...";
+
+            const res = await fetch('/test2/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appId, mToken })
+            });
+            const result = await res.json();
+
+            // แสดง Animation ขั้นตอน
+            if(result.debug) {
+                result.debug.step1 ? updateStep('step1', 'success') : updateStep('step1', 'error');
+                
+                if(result.debug.step2) {
+                    updateStep('step2', 'success');
+                    document.getElementById('statusText').innerText = "ดึงข้อมูลส่วนบุคคลสำเร็จ...";
+                } else updateStep('step2', 'error');
+
+                result.debug.step3 ? updateStep('step3', 'success') : updateStep('step3', 'error');
+            }
+
+            if(result.status === 'success') {
+                document.getElementById('statusText').innerText = "ยืนยันตัวตนสำเร็จ! กำลังเข้าสู่ระบบ...";
+                // หน่วงเวลานิดเดียวให้เห็นว่าเขียวครบ แล้วไปหน้า Dashboard เลย
+                setTimeout(() => showDashboard(result.data), 800);
+            } else {
+                document.getElementById('statusText').classList.add('text-danger');
+                document.getElementById('statusText').innerText = "เกิดข้อผิดพลาด: " + result.message;
+                alert("Login Failed: " + result.message);
+                // ถ้าพลาด ให้กลับมาหน้ากรอกมือ เผื่อ mToken ผิด
+                setTimeout(() => {
+                    document.getElementById('processingView').classList.add('hidden');
+                    document.getElementById('loginView').classList.remove('hidden');
+                }, 2000);
+            }
+
+        } catch (e) {
+            updateStep('step1', 'error');
+            document.getElementById('statusText').innerText = "Connection Error: " + e.message;
+            alert("Error: " + e.message);
+        }
+    }
+
+    function showDashboard(data) {
+        document.getElementById('processingView').classList.add('hidden');
+        document.getElementById('dashboardView').classList.remove('hidden');
+        document.getElementById('userNameDisplay').innerText = `${data.firstName} ${data.lastName}`;
+        document.getElementById('userIdDisplay').innerText = data.userId;
+        currentUserId = data.userId;
+        currentAppId = data.appId;
+    }
+
+    async function sendNotify() {
+        if(!currentUserId) return;
+        const btn = document.querySelector('button[onclick="sendNotify()"]');
+        const originalIcon = btn.innerHTML;
+        const msg = document.getElementById('notifyMsg').value;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+        try {
+            const res = await fetch('/test2/notify/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appId: currentAppId, userId: currentUserId, message: msg })
+            });
+            const result = await res.json();
+            alert(result.success ? "✅ ส่งแจ้งเตือนเรียบร้อย!" : "❌ ส่งไม่ผ่าน: " + result.message);
+        } catch(e) {
+            alert("Error: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalIcon;
+        }
+    }
+</script>
+
+</body>
+</html>
