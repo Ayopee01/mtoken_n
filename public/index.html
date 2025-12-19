@@ -9,307 +9,385 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- DGA SDK -->
+  <!-- DGA CZP SDK -->
   <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
 
   <style>
     :root {
-      --primary-color: #0f172a;
-      --accent-color: #2563eb;
-      --success-color: #059669;
-      --bg-color: #f1f5f9;
+      --primary-green: #059669;
+      --light-green: #10b981;
+      --bg-soft: #ecfdf5;
+      --text-dark: #1f2937;
+      --white: #ffffff;
     }
 
     body {
       font-family: 'Sarabun', sans-serif;
-      background-color: var(--bg-color);
-      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-      background-size: 20px 20px;
+      background-color: var(--bg-soft);
+      background-image: linear-gradient(135deg, #d1fae5 0%, #ffffff 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--text-dark);
+      padding: 18px;
     }
 
     .main-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border: none;
-      border-radius: 24px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 30px;
+      box-shadow: 0 15px 35px rgba(5, 150, 105, 0.12);
       overflow: hidden;
-      max-width: 520px;
+      max-width: 460px;
       width: 100%;
-      transition: all 0.3s ease;
-    }
-
-    .card-header-custom {
-      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-      color: white;
-      padding: 30px;
-      text-align: center;
-      border: none;
-    }
-
-    .logo-area i {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      color: rgba(255,255,255,0.9);
-    }
-
-    .form-control {
-      border-radius: 12px;
-      padding: 12px 15px;
-      border: 1px solid #e2e8f0;
-      background-color: #f8fafc;
-    }
-
-    .btn-custom {
-      background: var(--primary-color);
-      color: white;
-      border-radius: 12px;
-      padding: 14px;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-
-    .btn-custom:hover {
-      background: var(--accent-color);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
-    }
-
-    /* Stepper */
-    .step-container {
-      display: flex;
-      justify-content: space-between;
-      margin: 20px 0;
       position: relative;
     }
-    .step-line {
-      position: absolute;
-      top: 15px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: #e2e8f0;
-      z-index: 0;
-    }
-    .step-item {
-      position: relative;
-      z-index: 1;
+
+    .header-minimal {
       text-align: center;
-      width: 33%;
+      padding: 38px 28px 12px;
+      background: transparent;
     }
-    .step-circle {
-      width: 32px;
-      height: 32px;
-      background: #fff;
-      border: 2px solid #cbd5e1;
+
+    .logo-circle {
+      width: 78px;
+      height: 78px;
+      background: linear-gradient(135deg, var(--light-green), var(--primary-green));
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 5px;
-      transition: all 0.5s;
-      color: #cbd5e1;
-    }
-    .step-label {
-      font-size: 0.75rem;
-      color: #64748b;
-      font-weight: 500;
+      margin: 0 auto 14px;
+      box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+      font-size: 2.3rem;
+      color: white;
+      position: relative;
+      z-index: 10;
     }
 
+    .custom-input-group {
+      position: relative;
+      margin-bottom: 18px;
+    }
+    .custom-input-group i {
+      position: absolute;
+      top: 50%;
+      left: 18px;
+      transform: translateY(-50%);
+      color: var(--primary-green);
+      opacity: 0.75;
+      z-index: 5;
+    }
+    .form-control-custom {
+      border-radius: 50px;
+      padding: 14px 18px 14px 48px;
+      border: 2px solid #e5e7eb;
+      background: #fff;
+      transition: all 0.25s;
+      font-size: 0.95rem;
+    }
+    textarea.form-control-custom {
+      border-radius: 18px !important;
+      padding-left: 48px !important;
+    }
+    .form-control-custom:focus {
+      border-color: var(--light-green);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+      outline: none;
+    }
+
+    .btn-green-gradient {
+      background: linear-gradient(90deg, var(--primary-green), var(--light-green));
+      border: none;
+      border-radius: 50px;
+      padding: 14px;
+      color: white;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      box-shadow: 0 10px 20px rgba(5, 150, 105, 0.18);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .btn-green-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px rgba(5, 150, 105, 0.28);
+      color: white;
+    }
+
+    .btn-link-soft {
+      border: 0;
+      background: transparent;
+      color: #0f766e;
+      font-weight: 600;
+      padding: 0;
+      text-decoration: none;
+    }
+    .btn-link-soft:hover { text-decoration: underline; }
+
+    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stepper */
+    .step-container { margin: 22px 0 10px; padding: 0 6px; }
+    .step-line { background: #e5e7eb; top: 18px; height: 2px; z-index: 1; }
+    .step-circle {
+      width: 35px; height: 35px;
+      border: 2px solid #e5e7eb;
+      color: #9ca3af;
+      background: white;
+      z-index: 2; position: relative;
+    }
     .step-item.active .step-circle {
-      border-color: var(--accent-color);
-      color: var(--accent-color);
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+      border-color: var(--primary-green);
+      color: var(--primary-green);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
     }
     .step-item.success .step-circle {
-      background: var(--success-color);
-      border-color: var(--success-color);
+      background: var(--primary-green);
+      border-color: var(--primary-green);
       color: white;
+      box-shadow: none;
     }
     .step-item.error .step-circle {
       background: #ef4444;
       border-color: #ef4444;
       color: white;
+      box-shadow: none;
     }
 
     /* Dashboard */
-    .user-profile {
+    .profile-card {
+      background: linear-gradient(180deg, var(--bg-soft) 0%, #fff 100%);
+      border-radius: 20px;
+      padding: 22px;
       text-align: center;
-      padding: 20px;
-      background: #f1f5f9;
-      border-radius: 16px;
-      margin-bottom: 20px;
+      border: 1px solid #d1fae5;
     }
-    .avatar-circle {
-      width: 60px;
-      height: 60px;
-      background: var(--accent-color);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      margin: 0 auto 10px;
+    .status-badge {
+      background: #d1fae5;
+      color: var(--primary-green);
+      border: 1px solid var(--primary-green);
     }
 
-    /* Register */
-    .register-card {
+    /* Alert box */
+    .soft-alert {
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 0.9rem;
+      border: 1px solid #e5e7eb;
       background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 16px;
+      color: #334155;
+    }
+    .soft-alert.error {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.06);
+      color: #b91c1c;
+    }
+    .soft-alert.success {
+      border-color: rgba(16, 185, 129, 0.35);
+      background: rgba(16, 185, 129, 0.08);
+      color: #065f46;
     }
 
-    .hidden { display: none !important; }
-    .fade-in { animation: fadeIn 0.5s ease-in; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 14px 0;
+    }
+
+    .mini-hint {
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.25rem;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.8rem;
     }
   </style>
 </head>
 
 <body>
   <div class="main-card fade-in">
-    <div class="card-header-custom">
-      <div class="logo-area"><i class="fa-solid fa-shield-halved"></i></div>
-      <h4 class="mb-0 fw-bold">ระบบยืนยันตัวตนดิจิทัล</h4>
-      <small class="opacity-75">Digital Government Authentication</small>
+    <div class="header-minimal">
+      <div class="logo-circle"><i class="fa-solid fa-shield-cat"></i></div>
+      <h4 class="fw-bold text-dark mt-2 mb-0">ระบบยืนยันตัวตน</h4>
+      <p class="text-muted small mb-0">Digital ID Authentication</p>
+      <div class="mini-hint mt-2">
+        เปิดผ่าน MiniApp จะอ่าน <span class="mono">appId/mToken</span> จาก SDK อัตโนมัติ<br/>
+        หรือแนบ URL: <span class="mono">?appId=...&mToken=...</span>
+      </div>
     </div>
 
-    <div class="card-body p-4">
+    <div class="card-body px-4 pb-5 pt-3">
 
-      <!-- ===================== LOGIN VIEW ===================== -->
+      <!-- LOGIN VIEW -->
       <div id="loginView">
-        <div class="mb-4 text-center text-muted">
-          <small>กรุณายืนยันตัวตนผ่านแอปพลิเคชัน "ทางรัฐ"</small>
+        <div id="loginAlert" class="soft-alert hidden"></div>
+
+        <label class="form-label small fw-bold text-muted ms-2 mt-2">APP ID</label>
+        <div class="custom-input-group">
+          <i class="fa-solid fa-fingerprint"></i>
+          <input type="text" id="appId" class="form-control form-control-custom" placeholder="ระบุ App ID">
         </div>
 
-        <div class="mb-3">
-          <label class="form-label small fw-bold text-uppercase text-secondary">App ID</label>
-          <div class="input-group">
-            <span class="input-group-text bg-white border-end-0">
-              <i class="fa-solid fa-cube text-muted"></i>
-            </span>
-            <input type="text" id="appId" class="form-control border-start-0 ps-0" placeholder="ระบุ App ID">
-          </div>
+        <label class="form-label small fw-bold text-muted ms-2">M-TOKEN KEY</label>
+        <div class="custom-input-group">
+          <i class="fa-solid fa-key"></i>
+          <textarea id="mToken" class="form-control form-control-custom" rows="2" placeholder="วาง Token ที่นี่"></textarea>
         </div>
 
-        <div class="mb-4">
-          <label class="form-label small fw-bold text-uppercase text-secondary">mToken Key</label>
-          <div class="input-group">
-            <span class="input-group-text bg-white border-end-0">
-              <i class="fa-solid fa-key text-muted"></i>
-            </span>
-            <textarea id="mToken" class="form-control border-start-0 ps-0" rows="2" placeholder="วางโค้ด mToken ที่นี่..."></textarea>
-          </div>
-        </div>
-
-        <button onclick="startLogin()" class="btn btn-custom w-100 shadow-sm">
-          <i class="fa-solid fa-fingerprint me-2"></i> ยืนยันตัวตน
+        <button onclick="startLogin()" class="btn btn-green-gradient w-100 mt-1">
+          ยืนยันข้อมูล <i class="fa-solid fa-arrow-right ms-2"></i>
         </button>
-      </div>
 
-      <!-- ===================== PROCESSING VIEW ===================== -->
-      <div id="processingView" class="hidden">
-        <h5 class="text-center fw-bold mb-4">กำลังดำเนินการอัตโนมัติ...</h5>
+        <div class="divider"></div>
 
-        <div class="step-container">
-          <div class="step-line"></div>
-          <div class="step-item" id="step1">
-            <div class="step-circle"><i class="fa-solid fa-link"></i></div>
-            <div class="step-label">GDX Token</div>
-          </div>
-          <div class="step-item" id="step2">
-            <div class="step-circle"><i class="fa-solid fa-id-card"></i></div>
-            <div class="step-label">ดึงข้อมูล</div>
-          </div>
-          <div class="step-item" id="step3">
-            <div class="step-circle"><i class="fa-solid fa-database"></i></div>
-            <div class="step-label">บันทึกระบบ</div>
-          </div>
+        <div class="mini-hint">
+          หากคุณเปิดผ่านเว็บปกติและไม่มี SDK ให้ใส่ AppId/MToken ด้วยมือได้<br/>
+          *ระบบจะพยายามอ่านจาก SDK ก่อน แล้วค่อย fallback ไป URL/ช่องกรอก
         </div>
 
-        <div class="text-center mt-3">
-          <small id="statusText" class="text-muted">ตรวจสอบพารามิเตอร์...</small>
-        </div>
-      </div>
-
-      <!-- ===================== REGISTER VIEW ===================== -->
-      <div id="registerView" class="hidden fade-in">
-        <div class="text-center mb-2">
-          <h5 class="fw-bold mb-1">Register</h5>
-          <small class="text-muted">ไม่พบข้อมูลการลงทะเบียนในระบบ กรุณายืนยันการลงทะเบียน</small>
-        </div>
-
-        <div class="register-card mt-3">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <div class="text-muted">
-              <small>userId</small><br>
-              <span class="fw-bold" id="regUserId">-</span>
-            </div>
-            <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill">
-              <i class="fa-solid fa-triangle-exclamation me-1"></i> ต้อง Register
-            </span>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-uppercase text-secondary">Register Password</label>
-            <input id="regPass" type="password" class="form-control" placeholder="ใส่รหัสผ่าน Register">
-            <div class="form-text text-muted">
-              * ใช้รหัสตามที่ผู้ดูแลระบบกำหนด
-            </div>
-          </div>
-
-          <button id="regBtn" onclick="doRegister()" class="btn btn-custom w-100 shadow-sm">
-            <i class="fa-solid fa-user-check me-2"></i> Register
+        <div class="mt-2 mini-hint">
+          <button class="btn-link-soft" type="button" onclick="fillFromSdk(true)">
+            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> ลองดึงจาก SDK อีกครั้ง
           </button>
         </div>
-
-        <button onclick="location.reload()" class="btn btn-outline-secondary w-100 mt-3 border-0">
-          <i class="fa-solid fa-arrow-left me-2"></i> กลับหน้า Login
-        </button>
       </div>
 
-      <!-- ===================== DASHBOARD VIEW ===================== -->
-      <div id="dashboardView" class="hidden fade-in">
-        <div class="user-profile">
-          <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
-          <h5 class="fw-bold mb-1" id="userNameDisplay">-</h5>
-          <small class="text-muted d-block">
-            Citizen ID: <span id="userIdDisplay">...</span>
-          </small>
-          <span class="badge bg-success bg-opacity-10 text-success mt-2 px-3 py-2 rounded-pill">
-            <i class="fa-solid fa-check-circle me-1"></i> Verified User
-          </span>
-        </div>
+      <!-- PROCESSING VIEW -->
+      <div id="processingView" class="hidden text-center">
+        <h5 class="fw-bold text-success mb-1">กำลังตรวจสอบ...</h5>
+        <p class="small text-muted mb-0">ระบบกำลังเชื่อมต่อข้อมูลของคุณ</p>
 
-        <div class="card border-0 bg-white shadow-sm">
-          <div class="card-body">
-            <h6 class="fw-bold mb-3">
-              <i class="fa-solid fa-bell text-warning me-2"></i>ส่งแจ้งเตือน (Notification)
-            </h6>
+        <div class="step-container position-relative d-flex justify-content-between">
+          <div class="step-line position-absolute w-100"></div>
 
-            <div class="input-group mb-2">
-              <input type="text" id="notifyMsg" class="form-control" value="ยินดีต้อนรับเข้าสู่ระบบ!">
-              <button onclick="sendNotify()" class="btn btn-dark">
-                <i class="fa-solid fa-paper-plane"></i>
-              </button>
+          <div class="step-item" id="step1">
+            <div class="step-circle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
+              <i class="fa-solid fa-network-wired"></i>
             </div>
+            <span class="step-label small text-muted">Token</span>
+          </div>
 
-            <div class="form-text text-muted">
-              * ระบบจะส่งผ่าน DGA Notification API
+          <div class="step-item" id="step2">
+            <div class="step-circle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
+              <i class="fa-solid fa-magnifying-glass"></i>
             </div>
+            <span class="step-label small text-muted">Profile</span>
+          </div>
+
+          <div class="step-item" id="step3">
+            <div class="step-circle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2">
+              <i class="fa-solid fa-file-circle-check"></i>
+            </div>
+            <span class="step-label small text-muted">Save</span>
           </div>
         </div>
 
-        <button onclick="location.reload()" class="btn btn-outline-secondary w-100 mt-4 border-0">
-          <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> ออกจากระบบ
+        <div id="statusText" class="small text-secondary mt-3">Initializing...</div>
+
+        <div class="mt-3">
+          <button class="btn btn-outline-secondary rounded-pill px-4" onclick="backToLogin()" type="button">
+            <i class="fa-solid fa-arrow-left me-2"></i> กลับไปแก้ข้อมูล
+          </button>
+        </div>
+      </div>
+
+      <!-- REGISTER VIEW -->
+      <div id="registerView" class="hidden fade-in">
+        <div class="soft-alert mb-3">
+          <b>ยังไม่พบข้อมูลในระบบ</b><br/>
+          กรุณากรอกข้อมูลเพิ่มเติมเพื่อสมัคร (Register) แล้วจึงเข้าสู่ระบบ
+        </div>
+
+        <div id="registerAlert" class="soft-alert hidden"></div>
+
+        <label class="form-label small fw-bold text-muted ms-2">ชื่อ</label>
+        <div class="custom-input-group">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="regFirstName" class="form-control form-control-custom" placeholder="ชื่อ">
+        </div>
+
+        <label class="form-label small fw-bold text-muted ms-2">นามสกุล</label>
+        <div class="custom-input-group">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="regLastName" class="form-control form-control-custom" placeholder="นามสกุล">
+        </div>
+
+        <label class="form-label small fw-bold text-muted ms-2">อีเมล</label>
+        <div class="custom-input-group">
+          <i class="fa-solid fa-envelope"></i>
+          <input type="email" id="regEmail" class="form-control form-control-custom" placeholder="example@email.com">
+        </div>
+
+        <label class="form-label small fw-bold text-muted ms-2">เบอร์โทร</label>
+        <div class="custom-input-group">
+          <i class="fa-solid fa-phone"></i>
+          <input type="text" id="regMobile" class="form-control form-control-custom" placeholder="0xxxxxxxxx">
+        </div>
+
+        <label class="form-label small fw-bold text-muted ms-2">ตั้งรหัสผ่าน</label>
+        <div class="custom-input-group">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="regPassword" class="form-control form-control-custom" placeholder="อย่างน้อย 6 ตัวอักษร">
+        </div>
+
+        <button onclick="submitRegister()" class="btn btn-green-gradient w-100">
+          สมัครสมาชิก <i class="fa-solid fa-user-plus ms-2"></i>
+        </button>
+
+        <div class="mt-3 text-center">
+          <button class="btn-link-soft" type="button" onclick="backToLogin()">
+            กลับไปหน้า Login
+          </button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD VIEW -->
+      <div id="dashboardView" class="hidden fade-in">
+        <div class="profile-card mb-4">
+          <div class="mb-3">
+            <img src="https://ui-avatars.com/api/?name=User&background=10b981&color=fff&rounded=true" id="userAvatar" width="70" class="shadow-sm" alt="avatar">
+          </div>
+
+          <h5 class="fw-bold mb-0" id="userNameDisplay">-</h5>
+          <small class="text-muted">ID: <span id="userIdDisplay">...</span></small>
+
+          <div class="mt-3">
+            <span class="badge rounded-pill status-badge px-3 py-2">
+              <i class="fa-solid fa-check me-1"></i> ยืนยันแล้ว
+            </span>
+          </div>
+
+          <div class="mini-hint mt-2">
+            <span class="mono">appId:</span> <span id="appIdDisplay" class="mono">-</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-3 rounded-4 border border-light shadow-sm">
+          <label class="small fw-bold text-muted mb-2">
+            <i class="fa-regular fa-paper-plane me-1"></i> ส่งข้อความแจ้งเตือน
+          </label>
+
+          <div class="d-flex gap-2">
+            <input type="text" id="notifyMsg" class="form-control form-control-custom py-2 px-3 ps-3" style="font-size: 0.9rem;" value="สวัสดีครับ, ยินดีต้อนรับ!">
+            <button onclick="sendNotify()" class="btn btn-dark rounded-circle" style="width: 45px; height: 45px;">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+
+          <div id="notifyHint" class="mini-hint mt-2"></div>
+        </div>
+
+        <button onclick="location.reload()" class="btn btn-outline-danger w-100 mt-4 rounded-pill py-2 border-0 bg-light">
+          <i class="fa-solid fa-power-off me-2"></i> ออกจากระบบ
         </button>
       </div>
 
@@ -317,228 +395,442 @@
   </div>
 
   <script>
+    // =========================
+    // Base path (สอดคล้องกับ static: app.use('/test2', express.static(...)))
+    // =========================
+    const BASE = '/test2';
+
     let currentUserId = null;
     let currentAppId = null;
-    let currentUserData = null;
 
-    function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+    // สำหรับ Register flow (ถ้าจำเป็น)
+    let pendingPair = { appId: null, mToken: null };
+    let pendingProfile = null; // ใช้ prefill register
 
-    function show(viewId) {
-      ['loginView','processingView','dashboardView','registerView'].forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
+    // -------------------------
+    // Utils
+    // -------------------------
+    function qs(id) { return document.getElementById(id); }
+
+    function show(el) { el.classList.remove('hidden'); }
+    function hide(el) { el.classList.add('hidden'); }
+
+    function setAlert(el, type, msg) {
+      el.classList.remove('hidden', 'error', 'success');
+      el.classList.add(type === 'error' ? 'error' : 'success');
+      el.innerHTML = msg;
+      show(el);
+    }
+
+    function clearAlert(el) {
+      el.classList.add('hidden');
+      el.classList.remove('error', 'success');
+      el.innerHTML = '';
+    }
+
+    function safeJson(text) {
+      if (!text || !text.trim()) return null;
+      try { return JSON.parse(text); } catch { return null; }
+    }
+
+    async function readJsonResponse(resp) {
+      const text = await resp.text().catch(() => '');
+      const json = safeJson(text);
+      return { text, json };
+    }
+
+    // -------------------------
+    // Stepper
+    // -------------------------
+    function resetSteps() {
+      ['step1','step2','step3'].forEach(id => {
+        const el = qs(id);
+        el.classList.remove('active','success','error');
+        const icon = el.querySelector('i');
+        // คืน icon เดิมตาม step
+        if (id === 'step1') icon.className = 'fa-solid fa-network-wired';
+        if (id === 'step2') icon.className = 'fa-solid fa-magnifying-glass';
+        if (id === 'step3') icon.className = 'fa-solid fa-file-circle-check';
       });
-      const v = document.getElementById(viewId);
-      if (v) v.classList.remove('hidden');
     }
 
     function updateStep(stepId, status) {
-      const el = document.getElementById(stepId);
-      if (!el) return;
+      const el = qs(stepId);
+      const icon = el.querySelector('i');
+      el.classList.remove('active','success','error');
+
       if (status === 'active') {
         el.classList.add('active');
       } else if (status === 'success') {
-        el.classList.remove('active'); el.classList.add('success');
-        el.querySelector('.step-circle').innerHTML = '<i class="fa-solid fa-check"></i>';
+        el.classList.add('success');
+        icon.className = 'fa-solid fa-check';
       } else if (status === 'error') {
-        el.classList.remove('active'); el.classList.add('error');
-        el.querySelector('.step-circle').innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        el.classList.add('error');
+        icon.className = 'fa-solid fa-xmark';
       }
     }
 
-    // =============== SDK/URL Resolve Logic (เหมือน test5) ===============
-    async function resolveFromUrlAndSdk() {
+    // -------------------------
+    // SDK / Param detection
+    // -------------------------
+    function getFromUrlParams() {
       const params = new URLSearchParams(window.location.search);
 
-      // 1) URL มาก่อน
-      let appId = params.get('appId');
-      let mToken = params.get('mToken');
+      // รองรับ key ที่คนชอบพิมพ์ผิดนิดหน่อยด้วย
+      const appId = params.get('appId') || params.get('appid') || params.get('AppId');
+      const mToken = params.get('mToken') || params.get('mtoken') || params.get('MToken');
 
-      // 2) SDK fallback (ทันที)
-      if ((!appId || !mToken) && window.czpSdk) {
-        try { appId = appId || window.czpSdk.getAppId?.(); } catch(e){}
-        try { mToken = mToken || window.czpSdk.getToken?.(); } catch(e){}
-      }
+      return { appId: appId || null, mToken: mToken || null };
+    }
 
-      // 3) ยังไม่ครบ -> รอ SDK โผล่ (poll 3 วินาที)
-      if (!appId || !mToken) {
-        for (let i=0;i<20;i++){
-          if (window.czpSdk?.getAppId && window.czpSdk?.getToken) {
-            try { appId = appId || window.czpSdk.getAppId(); } catch(e){}
-            try { mToken = mToken || window.czpSdk.getToken(); } catch(e){}
-            if (appId && mToken) break;
-          }
-          await sleep(150);
-        }
-      }
+    function getFromSdkOnce() {
+      const sdk = window.czpSdk;
+      if (!sdk) return { appId: null, mToken: null };
+
+      let appId = null;
+      let mToken = null;
+
+      try {
+        if (typeof sdk.getAppId === 'function') appId = sdk.getAppId() || null;
+      } catch(e) {}
+
+      try {
+        // สำคัญ: mToken ต้องดึงจาก getToken()
+        if (typeof sdk.getToken === 'function') mToken = sdk.getToken() || null;
+      } catch(e) {}
 
       return { appId, mToken };
     }
 
-    window.onload = async function() {
-      const { appId, mToken } = await resolveFromUrlAndSdk();
-
-      // เติมลง input เผื่อแก้มือ
-      if (appId) document.getElementById('appId').value = appId;
-      if (mToken) document.getElementById('mToken').value = mToken;
-
-      // ถ้าครบให้รันทันที
-      if (appId && mToken) startLogin();
+    async function waitForSdk(maxMs = 2000, intervalMs = 120) {
+      const start = Date.now();
+      while (Date.now() - start < maxMs) {
+        if (window.czpSdk && (typeof window.czpSdk.getAppId === 'function' || typeof window.czpSdk.getToken === 'function')) {
+          return true;
+        }
+        await new Promise(r => setTimeout(r, intervalMs));
+      }
+      return false;
     }
 
-    // ===================== LOGIN =====================
-    async function startLogin() {
-      const appId = document.getElementById('appId').value.trim();
-      const mToken = document.getElementById('mToken').value.trim();
+    async function fillFromSdk(force = false) {
+      // ถ้ากดปุ่ม "ลองดึงจาก SDK" -> force=true จะรอ SDK เพิ่ม
+      if (force) await waitForSdk(2500);
 
-      show('processingView');
-      document.getElementById('statusText').classList.remove('text-danger');
-      document.getElementById('statusText').innerText = "กำลังตรวจสอบ Token...";
+      const fromSdk = getFromSdkOnce();
+      if (fromSdk.appId) qs('appId').value = fromSdk.appId;
+      if (fromSdk.mToken) qs('mToken').value = fromSdk.mToken;
 
-      // reset step UI
-      ['step1','step2','step3'].forEach(id=>{
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.classList.remove('active','success','error');
-        const icon = el.querySelector('.step-circle');
-        if (id === 'step1') icon.innerHTML = '<i class="fa-solid fa-link"></i>';
-        if (id === 'step2') icon.innerHTML = '<i class="fa-solid fa-id-card"></i>';
-        if (id === 'step3') icon.innerHTML = '<i class="fa-solid fa-database"></i>';
-      });
+      // ถ้า force แล้วดึงไม่ได้ ให้ขึ้นเตือน
+      if (force && (!fromSdk.appId || !fromSdk.mToken)) {
+        const el = qs('loginAlert');
+        setAlert(el, 'error',
+          'ไม่พบค่า appId/mToken จาก SDK (อาจไม่ได้เปิดผ่าน MiniApp หรือ SDK ยังไม่พร้อม) — ลองใช้ URL param หรือกรอกเอง'
+        );
+      }
+    }
+
+    async function detectAndAutoRun() {
+      clearAlert(qs('loginAlert'));
+
+      // 1) URL param ก่อน
+      const fromUrl = getFromUrlParams();
+
+      // 2) ถ้ายังไม่ครบ -> รอ SDK (เผื่อโหลดช้า) แล้วอ่านจาก SDK
+      let appId = fromUrl.appId;
+      let mToken = fromUrl.mToken;
+
+      if (!appId || !mToken) {
+        await waitForSdk(2000);
+        const fromSdk = getFromSdkOnce();
+        appId = appId || fromSdk.appId;
+        mToken = mToken || fromSdk.mToken;
+      }
+
+      // 3) เติมลง input ให้เห็น
+      if (appId) qs('appId').value = appId;
+      if (mToken) qs('mToken').value = mToken;
+
+      // เก็บ pending ไว้ใช้ต่อ (register flow)
+      pendingPair = { appId, mToken };
+
+      // 4) Auto-run ถ้าครบ
+      if (appId && mToken) {
+        startLogin(true);
+      }
+    }
+
+    // -------------------------
+    // Navigation between views
+    // -------------------------
+    function backToLogin() {
+      resetSteps();
+      clearAlert(qs('loginAlert'));
+      clearAlert(qs('registerAlert'));
+
+      hide(qs('processingView'));
+      hide(qs('dashboardView'));
+      hide(qs('registerView'));
+      show(qs('loginView'));
+
+      qs('statusText').innerText = 'Initializing...';
+    }
+
+    function showRegister(prefill) {
+      // prefill: { firstName, lastName, email, mobile }
+      clearAlert(qs('registerAlert'));
+
+      if (prefill) {
+        qs('regFirstName').value = prefill.firstName || '';
+        qs('regLastName').value  = prefill.lastName || '';
+        qs('regEmail').value     = prefill.email || '';
+        qs('regMobile').value    = prefill.mobile || '';
+      }
+
+      hide(qs('loginView'));
+      hide(qs('processingView'));
+      hide(qs('dashboardView'));
+      show(qs('registerView'));
+    }
+
+    // -------------------------
+    // Login
+    // -------------------------
+    async function startLogin(isAuto = false) {
+      clearAlert(qs('loginAlert'));
+
+      // ก่อนยิง login: พยายามดึงจาก SDK อีกรอบ (เผื่อเพิ่งพร้อม)
+      await fillFromSdk(false);
+
+      const appId = (qs('appId').value || '').trim();
+      const mToken = (qs('mToken').value || '').trim();
+
+      pendingPair = { appId: appId || null, mToken: mToken || null };
+
+      if (!appId || !mToken) {
+        setAlert(qs('loginAlert'), 'error',
+          'ไม่พบ appId/mToken — กรุณาเปิดผ่าน MiniApp หรือแนบ URL param (?appId=...&mToken=...) หรือกรอกเอง'
+        );
+        return;
+      }
+
+      // UI switch
+      resetSteps();
+      hide(qs('loginView'));
+      hide(qs('registerView'));
+      hide(qs('dashboardView'));
+      show(qs('processingView'));
 
       try {
         updateStep('step1', 'active');
+        qs('statusText').classList.remove('text-danger','text-success');
+        qs('statusText').innerText = isAuto ? "ตรวจพบพารามิเตอร์แล้ว กำลังตรวจสอบ Token..." : "กำลังตรวจสอบ Token...";
 
-        const res = await fetch('/test2/auth/login', {
+        // Call backend
+        const res = await fetch(`${BASE}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appId, mToken })
         });
 
-        const result = await res.json().catch(()=>null);
+        const { text, json } = await readJsonResponse(res);
+        const result = json || { status: 'error', message: text || `HTTP ${res.status}` };
 
-        // Step UI จาก debug ถ้ามี
-        if (result?.debug) {
+        // ถ้าฝั่งคุณส่ง debug มา จะอัปเดต step ได้
+        // step1=token, step2=deprocResponse, step3=saveDB
+        if (result && result.debug) {
+          // step1: token ได้ไหม
           result.debug.step1 ? updateStep('step1', 'success') : updateStep('step1', 'error');
+          // step2: มีผล deproc ไหม
           result.debug.step2 ? updateStep('step2', 'success') : updateStep('step2', 'error');
+          // step3: save สำเร็จไหม
           result.debug.step3 ? updateStep('step3', 'success') : updateStep('step3', 'error');
         } else {
-          if (res.ok) {
+          // ถ้าไม่มี debug: อย่างน้อยให้ step1/2 success เมื่อ status success
+          if (result.status === 'success') {
             updateStep('step1', 'success');
             updateStep('step2', 'success');
             updateStep('step3', 'success');
-          } else {
-            updateStep('step1', 'error');
           }
         }
 
-        if (!res.ok || result?.status !== 'success') {
-          const msg = result?.message || result?.error || 'Login Failed';
-          document.getElementById('statusText').classList.add('text-danger');
-          document.getElementById('statusText').innerText = "เกิดข้อผิดพลาด: " + msg;
-          setTimeout(()=>show('loginView'), 1200);
+        // ====== Handle result ======
+        // 1) success -> dashboard
+        if (result.status === 'success') {
+          qs('statusText').innerText = "สำเร็จ! กำลังเข้าสู่ระบบ...";
+          qs('statusText').classList.add('text-success');
+          setTimeout(() => showDashboard(result.data), 600);
           return;
         }
 
-        // เก็บ context
-        currentAppId = result.data.appId;
-        currentUserId = result.data.userId;
-        currentUserData = result.data;
+        // 2) register needed -> show register page
+        // รองรับหลายชื่อฟิลด์ (กัน backend ส่งไม่เหมือนกัน)
+        const needRegister =
+          result.status === 'need_register' ||
+          result.code === 'NEED_REGISTER' ||
+          (typeof result.message === 'string' && result.message.toLowerCase().includes('register'));
 
-        // ถ้าต้อง register
-        if (result.needsRegister) {
-          document.getElementById('statusText').innerText = "ยังไม่เคย Register ในระบบ → กรุณาลงทะเบียน";
-          setTimeout(()=>{
-            document.getElementById('regUserId').innerText = currentUserId;
-            show('registerView');
-          }, 500);
+        if (needRegister) {
+          qs('statusText').innerText = "ยังไม่พบข้อมูลในระบบ กำลังไปหน้า Register...";
+          setTimeout(() => {
+            // ถ้า backend ส่ง profile บางส่วนมาให้ prefill ก็รองรับ
+            const prefill = result.data || result.profile || null;
+            showRegister(prefill);
+          }, 600);
           return;
         }
 
-        // ไป dashboard
-        document.getElementById('statusText').innerText = "ยืนยันตัวตนสำเร็จ! กำลังเข้าสู่ระบบ...";
-        setTimeout(()=>showDashboard(currentUserData), 700);
+        // 3) error
+        throw new Error(result.message || `Login Failed (HTTP ${res.status})`);
 
       } catch (e) {
         updateStep('step1', 'error');
-        document.getElementById('statusText').classList.add('text-danger');
-        document.getElementById('statusText').innerText = "Connection Error: " + e.message;
-        setTimeout(()=>show('loginView'), 1500);
+        qs('statusText').classList.remove('text-success');
+        qs('statusText').classList.add('text-danger');
+        qs('statusText').innerText = "เกิดข้อผิดพลาด: " + (e.message || String(e));
+
+        // กลับไปหน้า login พร้อม alert
+        setTimeout(() => {
+          backToLogin();
+          setAlert(qs('loginAlert'), 'error', "Login Failed: " + (e.message || String(e)));
+        }, 1200);
       }
     }
 
-    // ===================== REGISTER =====================
-    async function doRegister() {
-      const password = document.getElementById('regPass').value.trim();
-      if (!currentUserId) return alert('Missing userId (login first)');
-      if (!password) return alert('กรุณากรอกรหัสผ่าน');
+    function showDashboard(data) {
+      hide(qs('processingView'));
+      hide(qs('registerView'));
+      show(qs('dashboardView'));
 
-      const btn = document.getElementById('regBtn');
-      const old = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลัง Register...';
+      const firstName = (data && data.firstName) ? data.firstName : '-';
+      const lastName  = (data && data.lastName) ? data.lastName : '';
+      const userId    = (data && (data.userId || data.userid)) ? (data.userId || data.userid) : '-';
+      const appId     = (data && data.appId) ? data.appId : (pendingPair.appId || '-');
+
+      qs('userNameDisplay').innerText = `${firstName} ${lastName}`.trim();
+      qs('userIdDisplay').innerText = userId;
+      qs('appIdDisplay').innerText = appId;
+
+      qs('userAvatar').src =
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName+' '+lastName)}&background=10b981&color=fff&rounded=true`;
+
+      currentUserId = userId !== '-' ? userId : null;
+      currentAppId = appId !== '-' ? appId : null;
+    }
+
+    // -------------------------
+    // Register (เรียก backend /test2/auth/register)
+    // -------------------------
+    async function submitRegister() {
+      clearAlert(qs('registerAlert'));
+
+      const payload = {
+        appId: pendingPair.appId || (qs('appId').value || '').trim(),
+        mToken: pendingPair.mToken || (qs('mToken').value || '').trim(),
+        firstName: (qs('regFirstName').value || '').trim(),
+        lastName: (qs('regLastName').value || '').trim(),
+        email: (qs('regEmail').value || '').trim(),
+        mobile: (qs('regMobile').value || '').trim(),
+        password: (qs('regPassword').value || '').trim(),
+      };
+
+      if (!payload.firstName || !payload.lastName || !payload.password) {
+        setAlert(qs('registerAlert'), 'error', 'กรุณากรอก ชื่อ / นามสกุล / รหัสผ่าน ให้ครบ');
+        return;
+      }
+      if (payload.password.length < 6) {
+        setAlert(qs('registerAlert'), 'error', 'รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร');
+        return;
+      }
 
       try {
-        const res = await fetch('/test2/auth/register', {
+        setAlert(qs('registerAlert'), 'success', 'กำลังสมัครสมาชิก...');
+
+        const res = await fetch(`${BASE}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: currentUserId, password })
+          body: JSON.stringify(payload)
         });
 
-        const result = await res.json().catch(()=>null);
+        const { text, json } = await readJsonResponse(res);
+        const result = json || { status: 'error', message: text || `HTTP ${res.status}` };
 
-        if (!res.ok || result?.status !== 'success') {
-          alert(result?.message || 'Register failed');
+        if (!res.ok || result.status === 'error') {
+          throw new Error(result.message || `Register failed (HTTP ${res.status})`);
+        }
+
+        // หาก backend ส่งรูปแบบเดียวกับ login: { status:'success', data:{...} }
+        if (result.status === 'success' && result.data) {
+          showDashboard(result.data);
           return;
         }
 
-        alert('✅ Register สำเร็จ');
-        // ไป dashboard ต่อ
-        showDashboard(currentUserData || { userId: currentUserId });
+        // ถ้า backend ส่ง { success:true, data:{} } ก็รองรับ
+        if (result.success && result.data) {
+          showDashboard(result.data);
+          return;
+        }
+
+        // fallback: สมัครสำเร็จแต่ไม่ได้ส่ง data -> กลับไป login แล้วให้ auto login
+        setAlert(qs('registerAlert'), 'success', 'สมัครสำเร็จ! กำลังกลับไป Login...');
+        setTimeout(() => {
+          backToLogin();
+          startLogin(true);
+        }, 800);
 
       } catch (e) {
-        alert("Error: " + e.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = old;
+        setAlert(qs('registerAlert'), 'error', 'Register Failed: ' + (e.message || String(e)));
       }
     }
 
-    // ===================== DASHBOARD =====================
-    function showDashboard(data) {
-      show('dashboardView');
-
-      const fullName = `${data?.firstName || ''} ${data?.lastName || ''}`.trim() || '-';
-      document.getElementById('userNameDisplay').innerText = fullName;
-      // ใน UI เดิมโชว์ Citizen ID แต่อันนี้เราเอา userId ใส่ (ปรับได้)
-      document.getElementById('userIdDisplay').innerText = data?.citizenId || data?.userId || '...';
-    }
-
-    // ===================== NOTIFY =====================
+    // -------------------------
+    // Notify
+    // -------------------------
     async function sendNotify() {
-      if(!currentUserId) return;
+      if (!currentUserId || !currentAppId) return;
+
       const btn = document.querySelector('button[onclick="sendNotify()"]');
-      const originalIcon = btn.innerHTML;
-      const msg = document.getElementById('notifyMsg').value;
+      const original = btn.innerHTML;
+      const msg = (qs('notifyMsg').value || '').trim();
 
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      qs('notifyHint').innerText = 'กำลังส่ง...';
 
       try {
-        const res = await fetch('/test2/notify/send', {
+        const res = await fetch(`${BASE}/notify/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appId: currentAppId, userId: currentUserId, message: msg })
         });
-        const result = await res.json().catch(()=>({}));
-        alert(result.success ? "✅ ส่งแจ้งเตือนเรียบร้อย!" : "❌ ส่งไม่ผ่าน: " + (result.message || 'Unknown error'));
-      } catch(e) {
-        alert("Error: " + e.message);
+
+        const { text, json } = await readJsonResponse(res);
+        const result = json || { success: false, message: text || `HTTP ${res.status}` };
+
+        if (!res.ok || !result.success) {
+          throw new Error(result.message || 'ส่งไม่สำเร็จ');
+        }
+
+        // UI feedback
+        qs('notifyHint').innerText = '✅ ส่งแจ้งเตือนเรียบร้อย';
+        const input = qs('notifyMsg');
+        input.style.borderColor = '#10b981';
+        setTimeout(() => input.style.borderColor = '#e5e7eb', 1400);
+
+      } catch (e) {
+        qs('notifyHint').innerText = '❌ ส่งไม่สำเร็จ: ' + (e.message || String(e));
       } finally {
         btn.disabled = false;
-        btn.innerHTML = originalIcon;
+        btn.innerHTML = original;
       }
     }
+
+    // -------------------------
+    // Auto-run
+    // -------------------------
+    window.addEventListener('load', () => {
+      detectAndAutoRun();
+    });
   </script>
 </body>
 </html>
