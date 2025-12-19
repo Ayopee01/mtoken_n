@@ -1,6 +1,6 @@
 // ==========================================
 // app.js (v13.0 Final Reference)
-// รวม Login (Auto-Table) + Notification (Based on test3)
+// รวม Login (Auto-Table) + Notification (Based on test2)
 // ==========================================
 const express = require('express');
 const axios = require('axios');
@@ -100,7 +100,7 @@ router.post('/auth/login', async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// 2️⃣ API NOTIFICATION (อ้างอิงจากโค้ด test3)
+// 2️⃣ API NOTIFICATION (อ้างอิงจากโค้ด test2)
 // ------------------------------------------------------------------
 router.post('/notify/send', async (req, res) => {
     console.log("🚀 [START] /notify/send");
@@ -123,7 +123,7 @@ router.post('/notify/send', async (req, res) => {
             "Token": token
         };
 
-        // 3. เตรียม Body (ตามแบบฉบับ test3 เป๊ะๆ)
+        // 3. เตรียม Body (ตามแบบฉบับ test2)
         const body = {
             appId: appId,
             data: [
