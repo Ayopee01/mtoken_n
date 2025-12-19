@@ -5,7 +5,7 @@ services:
   app:
     build: .
     ports:
-      - "3005:3000" # Map Port 3005 (host) -> 3000 (container)
+      - "3006:3005" # Map Port 3005 (host) -> 3000 (container)
     environment:
       - DB_HOST=db
       - DB_USER=${DB_USER}
