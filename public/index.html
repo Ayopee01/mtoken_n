@@ -9,11 +9,12 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
+    <!-- ติดตั้ง SDK สำหรับ Citizen Portal -->
     <script src="https://czp.dga.or.th/cportal/sdk/iu/v3/sdk.js"></script>
 
     <style>
         :root {
-            /* ธีมสีใหม่: เขียว-ขาว */
+            /* ธีมสี: เขียว-ขาว */
             --primary-green: #059669; /* Emerald 600 */
             --light-green: #10b981;   /* Emerald 500 */
             --bg-soft: #ecfdf5;       /* Emerald 50 */
@@ -147,6 +148,12 @@
             border: 1px solid var(--primary-green);
         }
 
+        /* ✅ [เพิ่มใหม่] ทำให้ช่องที่ถูกล็อคดูชัดขึ้น */
+        .locked {
+            background: #f9fafb !important;
+            opacity: 0.95;
+        }
+
         .hidden { display: none !important; }
         .fade-in { animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -208,6 +215,79 @@
             <div id="statusText" class="small text-secondary mt-3">Initializing...</div>
         </div>
 
+        <!-- ✅ [เพิ่มใหม่] View สำหรับลงทะเบียน Auto + เพิ่มที่อยู่ -->
+        <div id="registerView" class="hidden fade-in">
+            <h5 class="fw-bold text-success mb-2">ลงทะเบียน</h5>
+            <p class="small text-muted mb-3">ข้อมูลที่มีแล้วจะถูกล็อคให้แก้ไขไม่ได้ และกรุณากรอกที่อยู่ให้ครบ</p>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted ms-3">ชื่อ</label>
+                <input type="text" id="regFirstName" class="form-control form-control-custom" placeholder="ชื่อ">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted ms-3">นามสกุล</label>
+                <input type="text" id="regLastName" class="form-control form-control-custom" placeholder="นามสกุล">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted ms-3">เลขบัตรประชาชน</label>
+                <input type="text" id="regCitizenId" class="form-control form-control-custom" placeholder="เลขบัตรประชาชน">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted ms-3">เบอร์มือถือ</label>
+                <input type="text" id="regMobile" class="form-control form-control-custom" placeholder="เบอร์มือถือ">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted ms-3">อีเมล</label>
+                <input type="text" id="regEmail" class="form-control form-control-custom" placeholder="อีเมล">
+            </div>
+
+            <hr class="my-3">
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted ms-3">ที่อยู่ (บรรทัด 1) *</label>
+                <input type="text" id="addr1" class="form-control form-control-custom" placeholder="บ้านเลขที่ หมู่ ถนน...">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted ms-3">ที่อยู่ (บรรทัด 2)</label>
+                <input type="text" id="addr2" class="form-control form-control-custom" placeholder="อาคาร/ซอย/หมู่บ้าน...">
+            </div>
+
+            <div class="row g-2">
+                <div class="col-6">
+                    <label class="form-label small fw-bold text-muted ms-3">แขวง/ตำบล *</label>
+                    <input type="text" id="subdistrict" class="form-control form-control-custom" placeholder="แขวง/ตำบล">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small fw-bold text-muted ms-3">เขต/อำเภอ *</label>
+                    <input type="text" id="district" class="form-control form-control-custom" placeholder="เขต/อำเภอ">
+                </div>
+            </div>
+
+            <div class="row g-2 mt-2">
+                <div class="col-6">
+                    <label class="form-label small fw-bold text-muted ms-3">จังหวัด *</label>
+                    <input type="text" id="province" class="form-control form-control-custom" placeholder="จังหวัด">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small fw-bold text-muted ms-3">รหัสไปรษณีย์ *</label>
+                    <input type="text" id="postcode" class="form-control form-control-custom" placeholder="รหัสไปรษณีย์">
+                </div>
+            </div>
+
+            <button onclick="submitRegister()" class="btn btn-green-gradient w-100 mt-3">
+                ลงทะเบียนและไป eService <i class="fa-solid fa-arrow-right ms-2"></i>
+            </button>
+
+            <button onclick="backToLogin()" class="btn btn-outline-secondary w-100 mt-2 rounded-pill">
+                กลับไปหน้า Login
+            </button>
+        </div>
+
         <div id="dashboardView" class="hidden fade-in">
             <div class="profile-card mb-4">
                 <div class="mb-3">
@@ -242,20 +322,27 @@
     let currentUserId = null;
     let currentAppId = null;
 
-    // --- Script เดิม (Logic ไม่เปลี่ยน เปลี่ยนแค่การแสดงผล UI) ---
-    window.onload = function() {
-        const params = new URLSearchParams(window.location.search);
-        let foundAppId = params.get('appId');
-        let foundMToken = params.get('mToken');
+    // ✅ [เพิ่มใหม่] เก็บข้อมูล prefill จาก backend เพื่อใช้ตอน submit register
+    let registerPrefill = null;
+
+    // โหลดหน้า: ดึงค่า appId และ mToken จาก URL หรือ SDK
+    window.onload = function() { 
+        // ตอนโหลดหน้า (window.onload)
+        const params = new URLSearchParams(window.location.search); // ดึงค่าจาก URL
+        let foundAppId = params.get('appId'); // ดึงค่า appId
+        let foundMToken = params.get('mToken'); // ดึงค่า mToken
         
+        // ลองดึงจาก Citizen Portal SDK ถ้ายังไม่พบ ใน URL
         if(!foundAppId && window.czpSdk) {
-            try { foundAppId = window.czpSdk.getAppId(); } catch(e) {}
+            // ดึงจาก SDK 
+            try { foundAppId = window.czpSdk.getAppId(); } catch(e) {}      
         }
         if(foundAppId) document.getElementById('appId').value = foundAppId;
         if(foundMToken) document.getElementById('mToken').value = foundMToken;
         if(foundAppId && foundMToken) { startLogin(); }
     }
 
+    // อัปเดตสถานะขั้นตอน
     function updateStep(stepId, status) {
         const el = document.getElementById(stepId);
         const icon = el.querySelector('i');
@@ -270,6 +357,27 @@
         }
     }
 
+    // ✅ [เพิ่มใหม่] ซ่อนทุก view แล้วค่อยโชว์ view ที่ต้องการ (กันซ้อนกัน)
+    function hideAllViews() {
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('processingView').classList.add('hidden');
+        document.getElementById('dashboardView').classList.add('hidden');
+        document.getElementById('registerView').classList.add('hidden');
+    }
+
+    // ✅ [เพิ่มใหม่] helper: ถ้ามีค่าแล้วให้ล็อค (disable) ไม่ให้แก้ไข
+    function lockIfHasValue(el, value) {
+        el.value = value || '';
+        if (value && String(value).trim() !== '') {
+            el.disabled = true;
+            el.classList.add('locked');
+        } else {
+            el.disabled = false;
+            el.classList.remove('locked');
+        }
+    }
+
+    // เริ่มกระบวนการล็อกอิน
     async function startLogin() {
         const appId = document.getElementById('appId').value;
         const mToken = document.getElementById('mToken').value;
@@ -281,32 +389,51 @@
             updateStep('step1', 'active');
             document.getElementById('statusText').innerText = "กำลังตรวจสอบ Token...";
 
-            // จำลอง API Call (เนื่องจากผมไม่มี Backend จริง)
-            // ในการใช้งานจริง ให้ใช้ fetch เดิมของคุณ
-             const res = await fetch('/test2/auth/login', {
+            // เรียก API /test2/auth/login
+            const res = await fetch('/test2/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ appId, mToken })
             });
+            // รับผลลัพธ์จาก API เป็น JSON
             const result = await res.json();
 
-            // สำหรับทดสอบ UI เท่านั้น (ลบส่วนนี้ออกเมื่อใช้จริงและใช้ code ด้านบน)
-            // const result = { status: 'success', data: { firstName: 'สมชาย', lastName: 'ใจดี', userId: '1100012345678', appId: appId }, debug: { step1: true, step2: true, step3: true } };
-            // await new Promise(r => setTimeout(r, 1500)); // Delay ปลอม
-
+            // อัปเดตสถานะขั้นตอนตามผลลัพธ์ 3 ขั้นตอน debug
             if(result.debug) {
                 result.debug.step1 ? updateStep('step1', 'success') : updateStep('step1', 'error');
                 result.debug.step2 ? updateStep('step2', 'success') : updateStep('step2', 'error');
                 result.debug.step3 ? updateStep('step3', 'success') : updateStep('step3', 'error');
             }
 
+            /* =========================================================
+               ✏️ [แก้ไข] รองรับ status ใหม่จาก backend
+               - exists        => พบ citizen_id แล้ว ให้ redirect ไป eService
+               - need_register => ไม่พบ ให้ไปหน้า register (Auto + เพิ่มที่อยู่)
+               (logic success เดิม ไม่ใช้แล้วถ้า backend ปรับตามที่คุย)
+            ========================================================= */
+            if (result.status === 'exists') {
+                document.getElementById('statusText').innerText = "พบข้อมูลแล้ว กำลังไป eService...";
+                document.getElementById('statusText').classList.add('text-success');
+                setTimeout(() => { window.location.href = result.redirectUrl; }, 400);
+                return;
+            }
+
+            if (result.status === 'need_register') {
+                document.getElementById('statusText').innerText = "ไม่พบข้อมูลในระบบ กรุณาลงทะเบียนเพิ่มเติม...";
+                document.getElementById('statusText').classList.add('text-success');
+                setTimeout(() => showRegister(result.data.prefill), 400);
+                return;
+            }
+
+            // เผื่อกรณียังมีโค้ด backend เก่าอยู่
             if(result.status === 'success') {
                 document.getElementById('statusText').innerText = "สำเร็จ! กำลังเข้าสู่ระบบ...";
                 document.getElementById('statusText').classList.add('text-success');
                 setTimeout(() => showDashboard(result.data), 800);
-            } else {
-                throw new Error(result.message || "Login Failed");
+                return;
             }
+
+            throw new Error(result.message || "Login Failed");
 
         } catch (e) {
             updateStep('step1', 'error');
@@ -319,16 +446,113 @@
         }
     }
 
+    // แสดงแดชบอร์ดผู้ใช้
     function showDashboard(data) {
-        document.getElementById('processingView').classList.add('hidden');
+        hideAllViews(); // ✅ [เพิ่มใหม่] กัน view ซ้อนกัน
         document.getElementById('dashboardView').classList.remove('hidden');
+
         document.getElementById('userNameDisplay').innerText = `${data.firstName} ${data.lastName}`;
         document.getElementById('userIdDisplay').innerText = data.userId;
         document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${data.firstName}+${data.lastName}&background=10b981&color=fff&rounded=true`;
+
         currentUserId = data.userId;
         currentAppId = data.appId;
     }
 
+    /* =========================================================
+       ✅ [เพิ่มใหม่] แสดงหน้า Register + prefill + lock ช่องที่มีข้อมูล
+       อธิบาย:
+       - backend ส่ง prefill มา
+       - ช่องที่มีค่าแล้ว: ล็อคไม่ให้แก้ (disable)
+       - ช่องที่ว่าง: ให้ผู้ใช้กรอกได้
+       - ที่อยู่: ให้กรอกเองทั้งหมด (DGA ไม่ส่ง)
+    ========================================================= */
+    function showRegister(prefill) {
+        registerPrefill = prefill;
+
+        hideAllViews();
+        document.getElementById('registerView').classList.remove('hidden');
+
+        lockIfHasValue(document.getElementById('regFirstName'), prefill.firstName);
+        lockIfHasValue(document.getElementById('regLastName'), prefill.lastName);
+        lockIfHasValue(document.getElementById('regCitizenId'), prefill.citizenId);
+        lockIfHasValue(document.getElementById('regMobile'), prefill.mobile);
+        lockIfHasValue(document.getElementById('regEmail'), prefill.email);
+
+        // ที่อยู่: เคลียร์ให้ผู้ใช้กรอกเอง
+        document.getElementById('addr1').value = '';
+        document.getElementById('addr2').value = '';
+        document.getElementById('subdistrict').value = '';
+        document.getElementById('district').value = '';
+        document.getElementById('province').value = '';
+        document.getElementById('postcode').value = '';
+    }
+
+    // ✅ [เพิ่มใหม่] ปุ่มกลับไปหน้า Login
+    function backToLogin() {
+        hideAllViews();
+        document.getElementById('loginView').classList.remove('hidden');
+    }
+
+    /* =========================================================
+       ✅ [เพิ่มใหม่] ส่งข้อมูลลงทะเบียนไป backend /test2/register
+       อธิบาย:
+       - เอาข้อมูล prefill (appId, userId, dob...) + ข้อมูลที่ผู้ใช้กรอก (ที่อยู่)
+       - validate ช่องที่ต้องมี (*)
+       - ถ้าสำเร็จ backend จะส่ง redirectUrl กลับมา แล้วไป eService ต่อ
+    ========================================================= */
+    async function submitRegister() {
+        if (!registerPrefill) return;
+
+        const payload = {
+            appId: registerPrefill.appId,
+            userId: registerPrefill.userId,
+
+            citizenId: document.getElementById('regCitizenId').value.trim(),
+            firstName: document.getElementById('regFirstName').value.trim(),
+            lastName: document.getElementById('regLastName').value.trim(),
+            dateOfBirth: registerPrefill.dateOfBirth || null,
+            mobile: document.getElementById('regMobile').value.trim(),
+            email: document.getElementById('regEmail').value.trim(),
+            notification: registerPrefill.notification || null,
+
+            addressLine1: document.getElementById('addr1').value.trim(),
+            addressLine2: document.getElementById('addr2').value.trim(),
+            subdistrict: document.getElementById('subdistrict').value.trim(),
+            district: document.getElementById('district').value.trim(),
+            province: document.getElementById('province').value.trim(),
+            postcode: document.getElementById('postcode').value.trim(),
+        };
+
+        // validate เบื้องต้น (ช่อง * ต้องกรอก)
+        const required = ['citizenId','firstName','lastName','addressLine1','subdistrict','district','province','postcode'];
+        for (const k of required) {
+            if (!payload[k]) {
+                alert('กรุณากรอกข้อมูลให้ครบ (*)');
+                return;
+            }
+        }
+
+        try {
+            const res = await fetch('/test2/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+
+            if (result.status === 'success') {
+                window.location.href = result.redirectUrl;
+                return;
+            }
+
+            alert(result.message || 'Register failed');
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+    }
+
+    // ส่งการแจ้งเตือน Notification
     async function sendNotify() {
         if(!currentUserId) return;
         const btn = document.querySelector('button[onclick="sendNotify()"]');
@@ -338,19 +562,25 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
         try {
+            // เรียก API /test2/notify/send
             const res = await fetch('/test2/notify/send', {
                 method: 'POST',
+                // การตั้งค่า Headers
                 headers: { 'Content-Type': 'application/json' },
+                // การส่งข้อมูล appId, userId, message
                 body: JSON.stringify({ appId: currentAppId, userId: currentUserId, message: document.getElementById('notifyMsg').value })
             });
+            // รับผลลัพธ์จาก API เป็น JSON
             const result = await res.json();
-            // const result = { success: true }; // Mock
-            
+
+            // แสดงผลลัพธ์
             if(result.success) {
+                // แจ้งเตือนสำเร็จ
                 const input = document.getElementById('notifyMsg');
                 input.style.borderColor = '#10b981';
                 setTimeout(() => input.style.borderColor = '#e5e7eb', 2000);
             } else {
+                // แจ้งเตือนล้มเหลว
                 alert("Fail: " + result.message);
             }
         } catch(e) {

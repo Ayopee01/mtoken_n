@@ -11,147 +11,332 @@ require('dotenv').config();
 // Serve Frontend
 app.use('/test2', express.static(path.join(__dirname, 'public')));
 
-// --- Token API validate ---
-// CONSUMER_SECRET, CONSUMER_KEY, AGENT_ID จาก .env เพื่อรับค่า Access Token
+// --- function GDX Authen ---
 async function getGdxToken() {
-    try {
-        const res = await axios.get(process.env.GDX_AUTH_URL, {
-            params: { ConsumerSecret: process.env.CONSUMER_SECRET, AgentID: process.env.AGENT_ID },
-            headers: { 'Consumer-Key': process.env.CONSUMER_KEY, 'Content-Type': 'application/json' }
-        });
-        return res.data.Result;
-    } catch (e) {
-        console.error("❌ Failed to get GDX Token:", e.message);
-        throw new Error("Cannot get GDX Token");
-    }
+  try {
+    //  GET API GDX_AUTH_URL=https://api.egov.go.th/ws/auth/validate
+    const res = await axios.get(process.env.GDX_AUTH_URL, {
+      // CONSUMER_SECRET, CONSUMER_KEY, AGENT_ID จาก .env เพื่อรับค่า Access Token
+      params: { ConsumerSecret: process.env.CONSUMER_SECRET, AgentID: process.env.AGENT_ID },
+      headers: { 'Consumer-Key': process.env.CONSUMER_KEY, 'Content-Type': 'application/json' },
+    });
+    // คืนค่า Result ซึ่งเป็น Access Token
+    return res.data.Result;
+  } catch (e) {
+    console.error('❌ Failed to get GDX Token:', e.message);
+    throw new Error('Cannot get GDX Token');
+  }
 }
 
+// สร้าง Router แล้วทำ API 2 เส้น
 const router = express.Router();
 
-// --- เตรียม AppId และ MToken จาก Frontend ---
+/* =========================================================
+   ✅ [เพิ่มใหม่] initDb() ทำครั้งเดียวตอน start server
+   อธิบาย:
+   - เดิมคุณสร้างตารางใน /auth/login ทุกครั้งที่มีการ login
+   - ผู้ใช้ต้องการ "ให้มีอันเดียว" ไม่ต้องสร้างหลายรอบ
+   - เลยย้ายการ CREATE TABLE + เพิ่มคอลัมน์ที่อยู่ มาไว้ตรงนี้
+   - แล้วเรียก initDb() ครั้งเดียวก่อน app.listen
+========================================================= */
+async function initDb() {
+  // (ของเก่าเดิม) สร้างตาราง SQL
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS personal_data (
+      user_id VARCHAR(255) PRIMARY KEY,
+      citizen_id VARCHAR(255) UNIQUE,
+      first_name VARCHAR(255),
+      last_name VARCHAR(255),
+      date_of_birth VARCHAR(255),
+      mobile VARCHAR(255),
+      email VARCHAR(255),
+      notification VARCHAR(50),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // ✅ [เพิ่มใหม่] เพิ่มคอลัมน์ "ที่อยู่" (DGA ไม่ส่งมา ต้องเก็บเอง)
+  // ใช้ ADD COLUMN IF NOT EXISTS เพื่อรองรับกรณีตารางเคยถูกสร้างไปแล้ว
+  await pool.query(`ALTER TABLE personal_data ADD COLUMN IF NOT EXISTS address_line1 VARCHAR(255);`);
+  await pool.query(`ALTER TABLE personal_data ADD COLUMN IF NOT EXISTS address_line2 VARCHAR(255);`);
+  await pool.query(`ALTER TABLE personal_data ADD COLUMN IF NOT EXISTS subdistrict VARCHAR(255);`);
+  await pool.query(`ALTER TABLE personal_data ADD COLUMN IF NOT EXISTS district VARCHAR(255);`);
+  await pool.query(`ALTER TABLE personal_data ADD COLUMN IF NOT EXISTS province VARCHAR(255);`);
+  await pool.query(`ALTER TABLE personal_data ADD COLUMN IF NOT EXISTS postcode VARCHAR(20);`);
+
+  console.log('✅ DB schema ready (personal_data + address columns)');
+}
+
+/* =========================================================
+   ✅ [เพิ่มใหม่] helper สร้าง redirectUrl ไปหน้า eService
+   อธิบาย:
+   - ถ้าพบ citizen_id ใน DB -> ให้ไป eService ต่อทันที
+   - URL สามารถกำหนดจาก .env: ESERVICE_URL
+     ถ้าไม่กำหนด จะใช้ /test2/eservice.html (ตัวอย่าง)
+========================================================= */
+function buildEserviceRedirectUrl(appId, userId, citizenId) {
+  const base = process.env.ESERVICE_URL || '/test2/eservice.html';
+  const q = new URLSearchParams({
+    appId: appId || '',
+    userId: userId || '',
+    citizenId: citizenId || '',
+  });
+  return `${base}?${q.toString()}`;
+}
+
+// --- POST /test2/auth/login เรียกฟังชัน Login ---
 router.post('/auth/login', async (req, res) => {
-    const { appId, mToken } = req.body;
-    // debugInfo เก็บสถานะของแต่ละขั้นตอนหากมีข้อผิดพลาด
-    let debugInfo = { step1: null, step2: null, step3: false };
-    if (!appId || !mToken) return res.status(400).json({ error: 'Missing Data' });
+  // รับค่าจาก Frontend
+  const { appId, mToken } = req.body;
+  // debugInfo เก็บสถานะของแต่ละขั้นตอนหากมีข้อผิดพลาด
+  let debugInfo = { step1: null, step2: null, step3: false };
+  if (!appId || !mToken) return res.status(400).json({ error: 'Missing Data' });
 
-    try {
-        console.log('🔹 Login Step 1: Requesting Token...');
-        const token = await getGdxToken();
-        debugInfo.step1 = token;
+  try {
+    // ขั้นตอนที่ 1: ขอ Access Token ใหม่
+    console.log('🔹 Login Step 1: Requesting Token...');
+    // เรียก Function getGdxToken ขอ Access Token
+    const token = await getGdxToken();
+    debugInfo.step1 = token;
 
-        console.log('🔹 Login Step 2: Requesting Profile...');
-        const deprocRes = await axios.post(process.env.DEPROC_API_URL,
-            { AppId: appId, MToken: mToken },
-            { headers: { 'Consumer-Key': process.env.CONSUMER_KEY, 'Token': token, 'Content-Type': 'application/json' } }
-        );
-        debugInfo.step2 = deprocRes.data;
+    console.log('🔹 Login Step 2: Requesting Profile...');
+    // Deproc API URL
+    const deprocRes = await axios.post(
+      process.env.DEPROC_API_URL,
+      // ส่ง AppId กับ MToken
+      { AppId: appId, MToken: mToken },
+      // เตรียม Header ส่ง Consumer-Key กับ Access Token ที่ได้มา
+      { headers: { 'Consumer-Key': process.env.CONSUMER_KEY, Token: token, 'Content-Type': 'application/json' } }
+    );
+    debugInfo.step2 = deprocRes.data;
 
-        const pData = deprocRes.data.result;
-        if (!pData) throw new Error("Deproc returned NULL (Token Expired)");
+    // ตรวจสอบผลลัพธ์จาก Step 1 และ Step 2
+    const pData = deprocRes.data.result;
+    if (!pData) throw new Error('Deproc returned NULL (Token Expired)');
 
-        console.log('🔹 Login Step 3: Saving DB...');
-        // Auto-Create Table Logic
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS personal_data (
-                user_id VARCHAR(255) PRIMARY KEY,
-                citizen_id VARCHAR(255) UNIQUE,
-                first_name VARCHAR(255),
-                last_name VARCHAR(255),
-                date_of_birth VARCHAR(255),
-                mobile VARCHAR(255),
-                email VARCHAR(255),
-                notification VARCHAR(50),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
+    // ✏️ [แก้ไข] เดิม Step 3 คือ "Saving DB..."
+    // ตอนนี้เปลี่ยนเป็น "Checking DB ก่อน" ตาม requirement ใหม่
+    console.log('🔹 Login Step 3: Checking DB (citizen_id) before save...');
 
-        await pool.query(`
-            INSERT INTO personal_data (user_id, citizen_id, first_name, last_name, date_of_birth, mobile, email, notification)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            ON CONFLICT (citizen_id) DO UPDATE SET 
-            first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, mobile = EXCLUDED.mobile;
-        `, [pData.userId, pData.citizenId, pData.firstName, pData.lastName, pData.dateOfBirthString, pData.mobile, pData.email, pData.notification]);
+    // ✅ [เพิ่มใหม่] ตรวจเช็ค citizen_id ใน DB ก่อนบันทึก
+    const chk = await pool.query(
+      `SELECT citizen_id, user_id FROM personal_data WHERE citizen_id = $1 LIMIT 1`,
+      [pData.citizenId]
+    );
 
-        debugInfo.step3 = true;
+    // Step 3 สำเร็จ (ความหมายใหม่: เช็ค DB สำเร็จ)
+    debugInfo.step3 = true;
 
-        res.json({
-            status: 'success',
-            message: 'Login successful',
-            debug: debugInfo,
-            data: {
-                firstName: pData.firstName,
-                lastName: pData.lastName,
-                userId: pData.userId, // ส่ง userId กลับไป เพื่อใช้ยิง Notify
-                appId: appId
-            }
-        });
+    // ✅ [เพิ่มใหม่] ถ้าพบ citizen_id แล้ว -> ไปหน้า eService ต่อ
+    if (chk.rowCount > 0) {
+      const redirectUrl = buildEserviceRedirectUrl(appId, pData.userId, pData.citizenId);
 
-    } catch (error) {
-        console.error('❌ Login Error:', error.message);
-        res.status(500).json({ status: 'error', message: error.message, debug: debugInfo });
+      // ส่งผลลัพธ์กลับไปยัง Frontend
+      return res.json({
+        status: 'exists', // ✅ [เพิ่มใหม่]
+        message: 'Citizen already exists, redirecting to eService',
+        debug: debugInfo,
+        redirectUrl,
+      });
     }
+
+    // ✅ [เพิ่มใหม่] ถ้าไม่พบ -> ให้ไปหน้า "ลงทะเบียน Auto"
+    // โดยส่งข้อมูลที่มีจาก DGA ไปให้ prefill และให้ frontend "ล็อคช่องที่มีข้อมูลแล้ว"
+    return res.json({
+      status: 'need_register', // ✅ [เพิ่มใหม่]
+      message: 'Citizen not found, registration required',
+      debug: debugInfo,
+      data: {
+        prefill: {
+          firstName: pData.firstName,
+          lastName: pData.lastName,
+          userId: pData.userId, // ส่ง userId กลับไป เพื่อใช้ยิง Notify หรือใช้ต่อใน register
+          appId: appId,
+          citizenId: pData.citizenId,
+          dateOfBirth: pData.dateOfBirthString,
+          mobile: pData.mobile,
+          email: pData.email,
+          notification: pData.notification,
+        },
+      },
+    });
+
+    /* =========================================================
+       ✏️ [แก้ไข] โค้ดเดิมส่วน "บันทึก DB" ถูกย้ายไปที่ /test2/register
+       เหตุผล:
+       - ต้องเช็ค citizen_id ก่อน
+       - ถ้าพบ -> ไม่ต้อง insert
+       - ถ้าไม่พบ -> ให้ผู้ใช้กรอกที่อยู่ก่อน แล้วค่อย insert
+    ========================================================= */
+
+  } catch (error) {
+    console.error('❌ Login Error:', error.message);
+    res.status(500).json({ status: 'error', message: error.message, debug: debugInfo });
+  }
 });
 
-// ------------------------------------------------------------------
-// 2️⃣ API NOTIFICATION (อ้างอิงจากโค้ด test2)
-// ------------------------------------------------------------------
+/* =========================================================
+   ✅ [เพิ่มใหม่] POST /test2/register
+   อธิบาย:
+   - ใช้ตอน "ไม่พบ citizen_id" แล้ว frontend ให้ผู้ใช้กรอกที่อยู่เพิ่ม
+   - ช่องที่มีข้อมูลแล้ว frontend จะล็อค ไม่ให้แก้
+   - ช่องที่ว่างให้กรอกได้ และต้องมีที่อยู่เพราะ DGA ไม่ส่ง
+========================================================= */
+router.post('/register', async (req, res) => {
+  const {
+    appId,
+    userId,
+    citizenId,
+    firstName,
+    lastName,
+    dateOfBirth,
+    mobile,
+    email,
+    notification,
+    // ที่อยู่ (เพิ่มใหม่)
+    addressLine1,
+    addressLine2,
+    subdistrict,
+    district,
+    province,
+    postcode,
+  } = req.body;
+
+  // ✅ [เพิ่มใหม่] validate ขั้นต่ำ
+  if (!citizenId || !firstName || !lastName) {
+    return res.status(400).json({ status: 'error', message: 'Missing required personal fields' });
+  }
+  if (!addressLine1 || !subdistrict || !district || !province || !postcode) {
+    return res.status(400).json({ status: 'error', message: 'Missing required address fields' });
+  }
+
+  try {
+    // ✅ [เพิ่มใหม่] บันทึกข้อมูล (ถ้ามี citizen_id ซ้ำให้อัพเดทข้อมูล + ที่อยู่)
+    await pool.query(
+      `
+      INSERT INTO personal_data
+        (user_id, citizen_id, first_name, last_name, date_of_birth, mobile, email, notification,
+         address_line1, address_line2, subdistrict, district, province, postcode)
+      VALUES
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      ON CONFLICT (citizen_id) DO UPDATE SET
+        first_name = EXCLUDED.first_name,
+        last_name  = EXCLUDED.last_name,
+        mobile     = EXCLUDED.mobile,
+        email      = EXCLUDED.email,
+        notification = EXCLUDED.notification,
+        address_line1 = EXCLUDED.address_line1,
+        address_line2 = EXCLUDED.address_line2,
+        subdistrict = EXCLUDED.subdistrict,
+        district    = EXCLUDED.district,
+        province    = EXCLUDED.province,
+        postcode    = EXCLUDED.postcode;
+      `,
+      [
+        userId || null,
+        citizenId,
+        firstName,
+        lastName,
+        dateOfBirth || null,
+        mobile || null,
+        email || null,
+        notification || null,
+        addressLine1,
+        addressLine2 || null,
+        subdistrict,
+        district,
+        province,
+        postcode,
+      ]
+    );
+
+    const redirectUrl = buildEserviceRedirectUrl(appId, userId, citizenId);
+
+    return res.json({
+      status: 'success',
+      message: 'Register successful',
+      redirectUrl,
+    });
+  } catch (error) {
+    console.error('❌ Register Error:', error.message);
+    return res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// Notification API
+//--- POST /test2/notify/send เพื่อเรียก Function ส่ง Notification ---
 router.post('/notify/send', async (req, res) => {
-    console.log("🚀 [START] /notify/send");
+  console.log('🚀 [START] /notify/send');
 
-    // รับค่าจากหน้าบ้าน
-    const { appId, userId, message } = req.body;
+  // รับค่าจาก Frontend
+  const { appId, userId, message } = req.body;
 
-    if (!appId || !userId) {
-        return res.status(400).json({ success: false, message: "Missing appId or userId" });
-    }
+  // ตรวจสอบข้อมูลที่รับมา
+  if (!appId || !userId) {
+    return res.status(400).json({ success: false, message: 'Missing appId or userId' });
+  }
 
-    try {
-        // 1. ขอ Token ใหม่สดๆ (ไม่ต้องรอรับจาก frontend)
-        const token = await getGdxToken();
+  try {
+    // 1. ขอ Token ใหม่สดๆ (ไม่ต้องรอรับจาก frontend)
+    const token = await getGdxToken();
 
-        // 2. เตรียม Header
-        const headers = {
-            "Consumer-Key": process.env.CONSUMER_KEY,
-            "Content-Type": "application/json",
-            "Token": token
-        };
+    // 2. เตรียม Header
+    const headers = {
+      'Consumer-Key': process.env.CONSUMER_KEY,
+      'Content-Type': 'application/json',
+      Token: token,
+    };
 
-        // 3. เตรียม Body (ตามแบบฉบับ test2)
-        const body = {
-            appId: appId,
-            data: [
-                {
-                    message: message || "ทดสอบแจ้งเตือนจาก test2",
-                    userId: userId
-                }
-            ],
-            sendDateTime: null
-        };
+    // 3. เตรียม Body (ตามแบบฉบับ test2)
+    const body = {
+      appId: appId,
+      data: [
+        {
+          message: message || 'ทดสอบแจ้งเตือนจาก test2',
+          userId: userId,
+        },
+      ],
+      sendDateTime: null,
+    };
 
-        console.log("🌐 Calling DGA Notify API...");
-        console.log("📦 Body:", JSON.stringify(body));
+    console.log('🌐 Calling DGA Notify API...');
+    console.log('📦 Body:', JSON.stringify(body));
 
-        // 4. ยิง API
-        const response = await axios.post(process.env.NOTIFICATION_API_URL, body, { headers });
+    // 4. GET Notification API_URL=https://api.egov.go.th/ws/dga/czp/uat/v1/core/notification/push
+    const response = await axios.post(process.env.NOTIFICATION_API_URL, body, { headers });
 
-        console.log("✅ DGA Response:", response.data);
+    console.log('✅ DGA Response:', response.data);
 
-        res.json({
-            success: true,
-            message: "ส่ง Notification สำเร็จ",
-            result: response.data
-        });
-
-    } catch (err) {
-        console.error("💥 Notify Error:", err.response?.data || err.message);
-        res.status(500).json({
-            success: false,
-            message: "เกิดข้อผิดพลาดในการส่ง Notification",
-            error: err.response?.data || err.message
-        });
-    }
+    // 5. ส่งผลลัพธ์กลับไปยัง Frontend เป็น JSON
+    res.json({
+      success: true,
+      message: 'ส่ง Notification สำเร็จ',
+      result: response.data,
+    });
+  } catch (err) {
+    console.error('💥 Notify Error:', err.response?.data || err.message);
+    res.status(500).json({
+      success: false,
+      message: 'เกิดข้อผิดพลาดในการส่ง Notification',
+      error: err.response?.data || err.message,
+    });
+  }
 });
 
 app.use('/test2', router);
-app.listen(process.env.PORT || 3000, () => console.log(`🚀 v13.0 Final Reference Running...`));
+
+/* =========================================================
+   ✏️ [แก้ไข] Start server หลัง initDb() สำเร็จ (ทำ schema ครั้งเดียว)
+   อธิบาย:
+   - ไม่ต้องสร้างตารางในทุก request แล้ว
+   - ถ้า initDb พัง จะไม่เปิด server เพื่อกันระบบทำงานผิด state
+========================================================= */
+const PORT = process.env.PORT || 3000;
+initDb()
+  .then(() => {
+    app.listen(PORT, () => console.log(`🚀 v13.0 Final Reference Running...`));
+  })
+  .catch((e) => {
+    console.error('❌ DB init failed:', e.message);
+    process.exit(1);
+  });
