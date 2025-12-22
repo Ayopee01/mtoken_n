@@ -341,7 +341,6 @@
       <div class="actions">
         <button class="btn primary" id="btnRefresh">รีเฟรชข้อมูล</button>
         <button class="btn" id="btnCopyJson">คัดลอก JSON</button>
-        <button class="btn danger" id="btnBack">กลับหน้าแรก</button>
       </div>
     </div>
 
@@ -569,11 +568,6 @@
       } catch {
         alert('คัดลอกไม่สำเร็จ');
       }
-    };
-
-    document.getElementById('btnBack').onclick = () => {
-      // กลับหน้าแรกของ test2 (ปรับได้ตามจริง)
-      location.href = '/test2/';
     };
 
     // start
