@@ -325,6 +325,41 @@ router.post('/notify/send', async (req, res) => {
 
 app.use('/test2', router);
 
+// ✅ [เพิ่มใหม่] GET /test2/eservice/profile
+// ใช้ให้หน้า eservice.html ดึงข้อมูลจาก DB มาแสดง
+router.get('/eservice/profile', async (req, res) => {
+  try {
+    const { citizenId, userId } = req.query;
+
+    if (!citizenId && !userId) {
+      return res.status(400).json({ status: 'error', message: 'Missing citizenId or userId' });
+    }
+
+    // เลือกค้นหาด้วย citizenId เป็นหลัก (ชัวร์สุด)
+    let q = null;
+    let params = null;
+
+    if (citizenId) {
+      q = `SELECT * FROM personal_data WHERE citizen_id = $1 LIMIT 1`;
+      params = [citizenId];
+    } else {
+      q = `SELECT * FROM personal_data WHERE user_id = $1 LIMIT 1`;
+      params = [userId];
+    }
+
+    const r = await pool.query(q, params);
+
+    if (r.rowCount === 0) {
+      return res.status(404).json({ status: 'not_found', message: 'No record found' });
+    }
+
+    return res.json({ status: 'success', data: r.rows[0] });
+  } catch (e) {
+    console.error('❌ eService profile error:', e.message);
+    return res.status(500).json({ status: 'error', message: e.message });
+  }
+});
+
 /* =========================================================
    ✏️ [แก้ไข] Start server หลัง initDb() สำเร็จ (ทำ schema ครั้งเดียว)
    อธิบาย:

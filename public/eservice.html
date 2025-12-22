@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>eService | Profile</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1:#052e2b;
+      --bg2:#0b1220;
+      --card:#0f172a;
+      --card2:#0b1220;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --line:rgba(148,163,184,.18);
+      --accent:#10b981;
+      --accent2:#34d399;
+      --danger:#fb7185;
+      --warn:#fbbf24;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --radius: 22px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:"Sarabun", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color:var(--text);
+      min-height:100vh;
+      background:
+        radial-gradient(900px 600px at 15% 10%, rgba(16,185,129,.25), transparent 55%),
+        radial-gradient(800px 520px at 85% 0%, rgba(52,211,153,.18), transparent 55%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+    }
+
+    .wrap{
+      width:min(980px, 100%);
+    }
+
+    .topbar{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:16px;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .logo{
+      width:44px;height:44px;
+      border-radius:14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 14px 30px rgba(16,185,129,.22);
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      letter-spacing:.5px;
+      color:#06261f;
+    }
+
+    .title{
+      line-height:1.1;
+    }
+    .title h1{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .title p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(52,211,153,.45);
+      background: rgba(16,185,129,.09);
+    }
+    .btn.primary{
+      border-color: rgba(16,185,129,.4);
+      background: linear-gradient(135deg, rgba(16,185,129,.22), rgba(52,211,153,.12));
+    }
+    .btn.danger:hover{
+      border-color: rgba(251,113,133,.55);
+      background: rgba(251,113,133,.10);
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .hero{
+      padding:18px 18px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .hero-left{
+      display:flex; gap:14px; align-items:center;
+      min-width: 260px;
+    }
+
+    .avatar{
+      width:52px;height:52px;
+      border-radius:18px;
+      background: linear-gradient(135deg, rgba(16,185,129,.35), rgba(52,211,153,.15));
+      border:1px solid rgba(52,211,153,.25);
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:rgba(229,231,235,.95);
+    }
+
+    .hero-meta h2{
+      margin:0;
+      font-size:16px;
+      font-weight:900;
+    }
+    .hero-meta .sub{
+      margin-top:3px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:12px;
+      border:1px solid rgba(52,211,153,.28);
+      background: rgba(16,185,129,.10);
+      color: rgba(229,231,235,.95);
+      white-space:nowrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      padding:14px;
+    }
+
+    @media (max-width: 860px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      background: rgba(11,18,32,.55);
+      border:1px solid var(--line);
+      border-radius: 18px;
+      padding:14px;
+      overflow:hidden;
+    }
+
+    .panel h3{
+      margin:0 0 10px;
+      font-size:13px;
+      letter-spacing:.2px;
+      color: rgba(229,231,235,.95);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .panel h3 span{
+      color:var(--muted);
+      font-weight:700;
+      font-size:12px;
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 190px 1fr;
+      gap:10px 12px;
+      padding-top:6px;
+    }
+    @media (max-width: 520px){
+      .kv{ grid-template-columns: 1fr; }
+    }
+
+    .k{
+      color: var(--muted);
+      font-weight:700;
+      font-size:12px;
+      border-bottom: 1px dashed rgba(148,163,184,.18);
+      padding-bottom:8px;
+    }
+    .v{
+      font-weight:700;
+      font-size:13px;
+      padding-bottom:8px;
+      border-bottom: 1px dashed rgba(148,163,184,.18);
+      word-break: break-word;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .v .val{
+      flex:1;
+      min-width:0;
+    }
+
+    .copy{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-radius: 10px;
+      font-size:12px;
+      padding:6px 8px;
+      cursor:pointer;
+      font-weight:800;
+      transition: background .12s ease, border-color .12s ease;
+      flex:0 0 auto;
+    }
+    .copy:hover{
+      border-color: rgba(52,211,153,.45);
+      background: rgba(16,185,129,.08);
+    }
+
+    .hint{
+      margin-top:10px;
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .state{
+      padding:18px;
+      display:none;
+    }
+    .state.show{ display:block; }
+
+    .loading{
+      display:flex; gap:12px; align-items:center;
+      color: var(--muted);
+      font-weight:800;
+    }
+    .dot{
+      width:9px;height:9px;border-radius:50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(16,185,129,.10);
+      animation: pulse 1s infinite ease-in-out;
+    }
+    @keyframes pulse{
+      0%{ transform:scale(1); opacity:.55; }
+      50%{ transform:scale(1.22); opacity:1; }
+      100%{ transform:scale(1); opacity:.55; }
+    }
+
+    .error{
+      border:1px solid rgba(251,113,133,.35);
+      background: rgba(251,113,133,.08);
+      color: rgba(255,255,255,.95);
+      border-radius: 18px;
+      padding:14px;
+      font-weight:800;
+    }
+
+    details{
+      margin-top:10px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      border-radius: 16px;
+      padding:10px 12px;
+    }
+    summary{
+      cursor:pointer;
+      font-weight:900;
+      color: rgba(229,231,235,.95);
+    }
+    pre{
+      margin:10px 0 0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      color: rgba(229,231,235,.92);
+      font-size:12px;
+      line-height:1.5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">eS</div>
+        <div class="title">
+          <h1>eService • Profile</h1>
+          <p>แสดงข้อมูลที่บันทึกในฐานข้อมูล (personal_data)</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="btnRefresh">รีเฟรชข้อมูล</button>
+        <button class="btn" id="btnCopyJson">คัดลอก JSON</button>
+        <button class="btn danger" id="btnBack">กลับหน้าแรก</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="state show" id="stateLoading">
+        <div class="loading">
+          <div class="dot"></div>
+          <div>กำลังโหลดข้อมูลจากฐานข้อมูล...</div>
+        </div>
+        <div class="hint">
+          ระบบจะดึงข้อมูลด้วย citizenId หรือ userId จาก query string เช่น<br/>
+          <b>/test2/eservice.html?citizenId=xxxxxxxxxxxxx</b>
+        </div>
+      </div>
+
+      <div class="state" id="stateError">
+        <div class="error" id="errorText">ไม่สามารถโหลดข้อมูลได้</div>
+      </div>
+
+      <div class="state" id="stateContent">
+        <div class="hero">
+          <div class="hero-left">
+            <div class="avatar" id="avatar">U</div>
+            <div class="hero-meta">
+              <h2 id="fullName">-</h2>
+              <div class="sub">Citizen ID: <span id="citizenIdText">-</span></div>
+            </div>
+          </div>
+
+          <div class="badge" id="statusBadge">บันทึกข้อมูลแล้ว • พร้อมใช้งาน</div>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <h3>ข้อมูลส่วนบุคคล <span>Personal</span></h3>
+            <div class="kv" id="kvPersonal"></div>
+          </div>
+
+          <div class="panel">
+            <h3>ที่อยู่ <span>Address</span></h3>
+            <div class="kv" id="kvAddress"></div>
+            <div class="hint">
+              * ช่องที่อยู่มาจากการลงทะเบียนเพิ่มเติม (DGA ไม่ส่งมา)
+            </div>
+          </div>
+
+          <div class="panel" style="grid-column: 1 / -1;">
+            <h3>ข้อมูลระบบ <span>System</span></h3>
+            <div class="kv" id="kvSystem"></div>
+
+            <details>
+              <summary>ดูข้อมูล JSON เต็ม</summary>
+              <pre id="rawJson">{}</pre>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -----------------------------
+    // อ่าน query params (รับจาก redirect)
+    // -----------------------------
+    function getQuery() {
+      const q = new URLSearchParams(location.search);
+      return {
+        appId: q.get('appId') || '',
+        userId: q.get('userId') || '',
+        citizenId: q.get('citizenId') || ''
+      };
+    }
+
+    // -----------------------------
+    // Utility: แสดง/ซ่อน state
+    // -----------------------------
+    function showState(name) {
+      document.getElementById('stateLoading').classList.remove('show');
+      document.getElementById('stateError').classList.remove('show');
+      document.getElementById('stateContent').classList.remove('show');
+      document.getElementById(name).classList.add('show');
+    }
+
+    // -----------------------------
+    // Utility: สร้างแถว key-value + ปุ่ม copy
+    // -----------------------------
+    function rowKV(key, value) {
+      const safeVal = (value === null || value === undefined || String(value).trim() === '')
+        ? '-' : String(value);
+
+      const k = document.createElement('div');
+      k.className = 'k';
+      k.textContent = key;
+
+      const v = document.createElement('div');
+      v.className = 'v';
+
+      const val = document.createElement('div');
+      val.className = 'val';
+      val.textContent = safeVal;
+
+      const btn = document.createElement('button');
+      btn.className = 'copy';
+      btn.textContent = 'Copy';
+      btn.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(safeVal);
+          btn.textContent = 'Copied';
+          setTimeout(() => btn.textContent = 'Copy', 800);
+        } catch {
+          alert('คัดลอกไม่สำเร็จ');
+        }
+      };
+
+      v.appendChild(val);
+      v.appendChild(btn);
+
+      return { k, v };
+    }
+
+    function setKV(containerId, pairs) {
+      const wrap = document.getElementById(containerId);
+      wrap.innerHTML = '';
+      pairs.forEach(([k, v]) => {
+        const r = rowKV(k, v);
+        wrap.appendChild(r.k);
+        wrap.appendChild(r.v);
+      });
+    }
+
+    // -----------------------------
+    // โหลดข้อมูลจาก backend
+    // (ต้องมี endpoint: GET /test2/eservice/profile)
+    // -----------------------------
+    let lastData = null;
+
+    async function loadProfile() {
+      const q = getQuery();
+
+      // ต้องมี citizenId หรือ userId อย่างน้อยหนึ่งตัว
+      if (!q.citizenId && !q.userId) {
+        showState('stateError');
+        document.getElementById('errorText').textContent =
+          'ไม่พบ citizenId หรือ userId ใน URL (เช่น ?citizenId=...)';
+        return;
+      }
+
+      showState('stateLoading');
+
+      const url = q.citizenId
+        ? `/test2/eservice/profile?citizenId=${encodeURIComponent(q.citizenId)}`
+        : `/test2/eservice/profile?userId=${encodeURIComponent(q.userId)}`;
+
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+
+        if (!res.ok || json.status !== 'success') {
+          throw new Error(json.message || 'Load failed');
+        }
+
+        lastData = json.data;
+        render(lastData);
+        showState('stateContent');
+
+      } catch (e) {
+        showState('stateError');
+        document.getElementById('errorText').textContent =
+          'โหลดข้อมูลไม่สำเร็จ: ' + e.message;
+      }
+    }
+
+    // -----------------------------
+    // Render ลง UI: แสดง "ทุก field" ที่อยู่ใน record
+    // -----------------------------
+    function render(d) {
+      const first = d.first_name || '';
+      const last = d.last_name || '';
+      const full = (first + ' ' + last).trim() || '-';
+      document.getElementById('fullName').textContent = full;
+      document.getElementById('citizenIdText').textContent = d.citizen_id || '-';
+      document.getElementById('avatar').textContent = (first[0] || 'U').toUpperCase();
+
+      // แสดงข้อมูลส่วนบุคคล
+      setKV('kvPersonal', [
+        ['user_id', d.user_id],
+        ['citizen_id', d.citizen_id],
+        ['first_name', d.first_name],
+        ['last_name', d.last_name],
+        ['date_of_birth', d.date_of_birth],
+        ['mobile', d.mobile],
+        ['email', d.email],
+        ['notification', d.notification],
+      ]);
+
+      // แสดงที่อยู่
+      setKV('kvAddress', [
+        ['address_line1', d.address_line1],
+        ['address_line2', d.address_line2],
+        ['subdistrict', d.subdistrict],
+        ['district', d.district],
+        ['province', d.province],
+        ['postcode', d.postcode],
+      ]);
+
+      // แสดงข้อมูลระบบ (รวม created_at)
+      setKV('kvSystem', [
+        ['created_at', d.created_at],
+      ]);
+
+      // JSON เต็ม (ทุก field ที่ DB ส่งมา)
+      document.getElementById('rawJson').textContent = JSON.stringify(d, null, 2);
+    }
+
+    // -----------------------------
+    // Buttons
+    // -----------------------------
+    document.getElementById('btnRefresh').onclick = loadProfile;
+
+    document.getElementById('btnCopyJson').onclick = async () => {
+      if (!lastData) return alert('ยังไม่มีข้อมูลให้คัดลอก');
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(lastData, null, 2));
+        alert('คัดลอก JSON แล้ว');
+      } catch {
+        alert('คัดลอกไม่สำเร็จ');
+      }
+    };
+
+    document.getElementById('btnBack').onclick = () => {
+      // กลับหน้าแรกของ test2 (ปรับได้ตามจริง)
+      location.href = '/test2/';
+    };
+
+    // start
+    loadProfile();
+  </script>
+</body>
+</html>
