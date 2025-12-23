@@ -472,6 +472,59 @@
     }
 
     // -----------------------------
+    // [เพิ่ม] Auto Notification เมื่อแสดงหน้า eService สำเร็จ
+    // - ใช้ endpoint เดิมของ backend: POST /test2/notify/send
+    // - ยิงแค่ครั้งเดียวต่อ 1 session กันยิงซ้ำเวลาผู้ใช้กด refresh
+    // -----------------------------
+    function getNotifyKey(citizenId, userId) {
+      return `eservice_notified:${citizenId || ''}:${userId || ''}`;
+    }
+
+    async function autoSendNotify(profile) {
+      const q = getQuery();
+
+      // appId ควรมาจาก query; ถ้าไม่มี ลองจาก sessionStorage (กรณี redirect มาแล้ว query ไม่ครบ)
+      const appId = q.appId || sessionStorage.getItem('appId') || '';
+      // ใช้ user_id จาก record เป็นหลัก (DB) เพราะ backend ใช้ยิง notify ด้วย userId
+      const userId = profile?.user_id || q.userId || sessionStorage.getItem('userId') || '';
+      const citizenId = profile?.citizen_id || q.citizenId || '';
+
+      if (!appId || !userId) {
+        console.warn('[autoNotify] missing appId/userId -> skip', { appId, userId });
+        return;
+      }
+
+      const key = getNotifyKey(citizenId, userId);
+      if (sessionStorage.getItem(key) === '1') return; // กันยิงซ้ำใน session เดียวกัน
+
+      // mark ก่อน กันผู้ใช้รีเฟรชรัวๆ
+      sessionStorage.setItem(key, '1');
+
+      const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'ผู้ใช้งาน';
+      const message = `เข้าสู่ระบบ eService สำเร็จ: ${fullName}`;
+
+      try {
+        const res = await fetch('/test2/notify/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appId, userId, message })
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          // ถ้าส่งไม่สำเร็จ ให้ปลดล็อค key เพื่อให้ลองใหม่ได้
+          sessionStorage.removeItem(key);
+          console.warn('[autoNotify] failed:', json);
+        } else {
+          console.log('[autoNotify] sent:', json);
+        }
+      } catch (e) {
+        sessionStorage.removeItem(key);
+        console.warn('[autoNotify] error:', e.message);
+      }
+    }
+
+    // -----------------------------
     // โหลดข้อมูลจาก backend
     // (ต้องมี endpoint: GET /test2/eservice/profile)
     // -----------------------------
@@ -479,6 +532,10 @@
 
     async function loadProfile() {
       const q = getQuery();
+
+      // [เพิ่ม] เก็บ appId/userId ไว้ใช้ใน session (กัน query ไม่ครบ)
+      if (q.appId) sessionStorage.setItem('appId', q.appId);
+      if (q.userId) sessionStorage.setItem('userId', q.userId);
 
       // ต้องมี citizenId หรือ userId อย่างน้อยหนึ่งตัว
       if (!q.citizenId && !q.userId) {
@@ -505,6 +562,9 @@
         lastData = json.data;
         render(lastData);
         showState('stateContent');
+
+        // [เพิ่ม] ส่ง Notification อัตโนมัติหลังแสดงผลสำเร็จ
+        autoSendNotify(lastData);
 
       } catch (e) {
         showState('stateError');

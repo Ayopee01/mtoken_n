@@ -31,16 +31,9 @@ async function getGdxToken() {
 // สร้าง Router แล้วทำ API 2 เส้น
 const router = express.Router();
 
-/* =========================================================
-   ✅ [เพิ่มใหม่] initDb() ทำครั้งเดียวตอน start server
-   อธิบาย:
-   - เดิมคุณสร้างตารางใน /auth/login ทุกครั้งที่มีการ login
-   - ผู้ใช้ต้องการ "ให้มีอันเดียว" ไม่ต้องสร้างหลายรอบ
-   - เลยย้ายการ CREATE TABLE + เพิ่มคอลัมน์ที่อยู่ มาไว้ตรงนี้
-   - แล้วเรียก initDb() ครั้งเดียวก่อน app.listen
-========================================================= */
+// --- Function สร้างตาราง DB (ถ้ายังไม่มี) ---
 async function initDb() {
-  // (ของเก่าเดิม) สร้างตาราง SQL
+  // สร้างตาราง SQL
   await pool.query(`
     CREATE TABLE IF NOT EXISTS personal_data (
       user_id VARCHAR(255) PRIMARY KEY,
@@ -55,7 +48,7 @@ async function initDb() {
     );
   `);
 
-  // ✅ [เพิ่มใหม่] เพิ่มคอลัมน์ "ที่อยู่" (DGA ไม่ส่งมา ต้องเก็บเอง)
+  // ✅ [เพิ่มใหม่] เพิ่มคอลัมน์ที่อยู่ (ถ้ายังไม่มี)
   // ใช้ ADD COLUMN IF NOT EXISTS เพื่อรองรับกรณีตารางเคยถูกสร้างไปแล้ว
   await pool.query(`ALTER TABLE personal_data ADD COLUMN IF NOT EXISTS address_line1 VARCHAR(255);`);
   await pool.query(`ALTER TABLE personal_data ADD COLUMN IF NOT EXISTS address_line2 VARCHAR(255);`);
@@ -67,13 +60,7 @@ async function initDb() {
   console.log('✅ DB schema ready (personal_data + address columns)');
 }
 
-/* =========================================================
-   ✅ [เพิ่มใหม่] helper สร้าง redirectUrl ไปหน้า eService
-   อธิบาย:
-   - ถ้าพบ citizen_id ใน DB -> ให้ไป eService ต่อทันที
-   - URL สามารถกำหนดจาก .env: ESERVICE_URL
-     ถ้าไม่กำหนด จะใช้ /test2/eservice.html (ตัวอย่าง)
-========================================================= */
+// --- Function สร้าง URL สำหรับ Redirect ไปยัง eService ---
 function buildEserviceRedirectUrl(appId, userId, citizenId) {
   const base = process.env.ESERVICE_URL || '/test2/eservice.html';
   const q = new URLSearchParams({
@@ -114,11 +101,10 @@ router.post('/auth/login', async (req, res) => {
     const pData = deprocRes.data.result;
     if (!pData) throw new Error('Deproc returned NULL (Token Expired)');
 
-    // ✏️ [แก้ไข] เดิม Step 3 คือ "Saving DB..."
-    // ตอนนี้เปลี่ยนเป็น "Checking DB ก่อน" ตาม requirement ใหม่
+    // ตรวจเช็ค citizen_id ใน DB ก่อนบันทึก
     console.log('🔹 Login Step 3: Checking DB (citizen_id) before save...');
 
-    // ✅ [เพิ่มใหม่] ตรวจเช็ค citizen_id ใน DB ก่อนบันทึก
+    // Query ตรวจสอบ citizen_id ในตาราง personal_data
     const chk = await pool.query(
       `SELECT citizen_id, user_id FROM personal_data WHERE citizen_id = $1 LIMIT 1`,
       [pData.citizenId]
@@ -140,10 +126,10 @@ router.post('/auth/login', async (req, res) => {
       });
     }
 
-    // ✅ [เพิ่มใหม่] ถ้าไม่พบ -> ให้ไปหน้า "ลงทะเบียน Auto"
-    // โดยส่งข้อมูลที่มีจาก DGA ไปให้ prefill และให้ frontend "ล็อคช่องที่มีข้อมูลแล้ว"
+    // ถ้าไม่พบ -> ให้ไปหน้า "ลงทะเบียน"
+    // โดยส่งข้อมูลที่มีจาก User ให้ prefill และให้ frontend "ล็อคช่องที่มีข้อมูลแล้ว"
     return res.json({
-      status: 'need_register', // ✅ [เพิ่มใหม่]
+      status: 'need_register',
       message: 'Citizen not found, registration required',
       debug: debugInfo,
       data: {
@@ -161,27 +147,13 @@ router.post('/auth/login', async (req, res) => {
       },
     });
 
-    /* =========================================================
-       ✏️ [แก้ไข] โค้ดเดิมส่วน "บันทึก DB" ถูกย้ายไปที่ /test2/register
-       เหตุผล:
-       - ต้องเช็ค citizen_id ก่อน
-       - ถ้าพบ -> ไม่ต้อง insert
-       - ถ้าไม่พบ -> ให้ผู้ใช้กรอกที่อยู่ก่อน แล้วค่อย insert
-    ========================================================= */
-
   } catch (error) {
     console.error('❌ Login Error:', error.message);
     res.status(500).json({ status: 'error', message: error.message, debug: debugInfo });
   }
 });
 
-/* =========================================================
-   ✅ [เพิ่มใหม่] POST /test2/register
-   อธิบาย:
-   - ใช้ตอน "ไม่พบ citizen_id" แล้ว frontend ให้ผู้ใช้กรอกที่อยู่เพิ่ม
-   - ช่องที่มีข้อมูลแล้ว frontend จะล็อค ไม่ให้แก้
-   - ช่องที่ว่างให้กรอกได้ และต้องมีที่อยู่เพราะ DGA ไม่ส่ง
-========================================================= */
+//--- POST /test2/register เพื่อบันทึกข้อมูลลง DB ---
 router.post('/register', async (req, res) => {
   const {
     appId,
@@ -193,7 +165,7 @@ router.post('/register', async (req, res) => {
     mobile,
     email,
     notification,
-    // ที่อยู่ (เพิ่มใหม่)
+    // Address
     addressLine1,
     addressLine2,
     subdistrict,
@@ -202,16 +174,20 @@ router.post('/register', async (req, res) => {
     postcode,
   } = req.body;
 
-  // ✅ [เพิ่มใหม่] validate ขั้นต่ำ
+  // ตรวจสอบข้อมูลที่รับมา validate
   if (!citizenId || !firstName || !lastName) {
+    // หากไม่มี citizenId, firstName, lastName ให้แจ้ง Missing required fields
     return res.status(400).json({ status: 'error', message: 'Missing required personal fields' });
   }
+  // ตรวจสอบข้อมูลที่อยู่
   if (!addressLine1 || !subdistrict || !district || !province || !postcode) {
+    // หากไม่มีข้อมูลที่อยู่ที่จำเป็น ให้แจ้ง Missing required address fields
     return res.status(400).json({ status: 'error', message: 'Missing required address fields' });
   }
 
   try {
     // ✅ [เพิ่มใหม่] บันทึกข้อมูล (ถ้ามี citizen_id ซ้ำให้อัพเดทข้อมูล + ที่อยู่)
+    // บันทึกข้อมูลลงตาราง personal_data
     await pool.query(
       `
       INSERT INTO personal_data
@@ -250,8 +226,10 @@ router.post('/register', async (req, res) => {
       ]
     );
 
+    // สร้าง URL สำหรับ Redirect ไปยัง eService
     const redirectUrl = buildEserviceRedirectUrl(appId, userId, citizenId);
 
+    // ส่งผลลัพธ์กลับไปยัง Frontend
     return res.json({
       status: 'success',
       message: 'Register successful',
@@ -277,22 +255,22 @@ router.post('/notify/send', async (req, res) => {
   }
 
   try {
-    // 1. ขอ Token ใหม่สดๆ (ไม่ต้องรอรับจาก frontend)
+    // 1. ขอ Token ใหม่ (ไม่ต้องรอรับจาก frontend)
     const token = await getGdxToken();
 
-    // 2. เตรียม Header
+    // 2. เตรียม Header ส่งไปกับ Notification API
     const headers = {
       'Consumer-Key': process.env.CONSUMER_KEY,
       'Content-Type': 'application/json',
       Token: token,
     };
 
-    // 3. เตรียม Body (ตามแบบฉบับ test2)
+    // 3. เตรียม Body สำหรับส่ง Notification API
     const body = {
       appId: appId,
       data: [
         {
-          message: message || 'ทดสอบแจ้งเตือนจาก test2',
+          message: message || 'ทดสอบแจ้งเตือน Notification',
           userId: userId,
         },
       ],
@@ -325,28 +303,31 @@ router.post('/notify/send', async (req, res) => {
 
 app.use('/test2', router);
 
-// ✅ [เพิ่มใหม่] GET /test2/eservice/profile
-// ใช้ให้หน้า eservice.html ดึงข้อมูลจาก DB มาแสดง
+// --- GET /test2/eservice/profile เพื่อดึงข้อมูลโปรไฟล์ ---
 router.get('/eservice/profile', async (req, res) => {
   try {
     const { citizenId, userId } = req.query;
 
+    // ตรวจสอบว่ามี citizenId หรือ userId อย่างน้อยหนึ่งค่า
     if (!citizenId && !userId) {
       return res.status(400).json({ status: 'error', message: 'Missing citizenId or userId' });
     }
 
-    // เลือกค้นหาด้วย citizenId เป็นหลัก (ชัวร์สุด)
+    // เตรียม Query และ Parameters
     let q = null;
     let params = null;
 
+    // ถ้ามี citizenId ให้ค้นหาด้วย citizenId ก่อน
     if (citizenId) {
       q = `SELECT * FROM personal_data WHERE citizen_id = $1 LIMIT 1`;
       params = [citizenId];
     } else {
+    // ถ้าไม่มี citizenId แต่มี userId ให้ค้นหาด้วย userId
       q = `SELECT * FROM personal_data WHERE user_id = $1 LIMIT 1`;
       params = [userId];
     }
 
+    // ดึงข้อมูลจากฐานข้อมูล
     const r = await pool.query(q, params);
 
     if (r.rowCount === 0) {
@@ -360,12 +341,6 @@ router.get('/eservice/profile', async (req, res) => {
   }
 });
 
-/* =========================================================
-   ✏️ [แก้ไข] Start server หลัง initDb() สำเร็จ (ทำ schema ครั้งเดียว)
-   อธิบาย:
-   - ไม่ต้องสร้างตารางในทุก request แล้ว
-   - ถ้า initDb พัง จะไม่เปิด server เพื่อกันระบบทำงานผิด state
-========================================================= */
 const PORT = process.env.PORT || 3000;
 initDb()
   .then(() => {
